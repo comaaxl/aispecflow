@@ -1,0 +1,19 @@
+{
+  "name": "aispecflow",
+  "version": "1.0.0",
+  "description": "Full development lifecycle: repo discovery → requirements grill → spec-driven design → TDD implementation → code review → archive → docs refresh",
+  "author": {
+    "name": "Axl Sun",
+    "email": "axlsun1992310@gmail.com"
+  },
+  "homepage": "https://github.com/comaaxl/aispecflow",
+  "license": "MIT",
+  "keywords": [
+    "sdd",
+    "tdd",
+    "code-review",
+    "spec-driven",
+    "workflow",
+    "development-lifecycle"
+  ]
+}

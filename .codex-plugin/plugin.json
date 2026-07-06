@@ -1,0 +1,36 @@
+{
+  "name": "aispecflow",
+  "version": "1.0.0",
+  "description": "Full development lifecycle: repo discovery → requirements grill → spec-driven design → TDD implementation → code review → archive → docs refresh",
+  "author": {
+    "name": "Axl Sun",
+    "email": "axlsun1992310@gmail.com"
+  },
+  "license": "MIT",
+  "keywords": [
+    "sdd",
+    "tdd",
+    "code-review",
+    "spec-driven",
+    "workflow",
+    "development-lifecycle"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "AISpecFlow",
+    "shortDescription": "Full development lifecycle: discover, grill, spec, TDD, review, archive, refresh docs",
+    "longDescription": "Axl Dev Flow provides a complete development lifecycle plugin with 7 skills. Start with repo discovery to understand your project, grill requirements until they're solid, generate OpenSpec artifacts (proposal/specs/design/tasks), implement with test-driven development, code review via subagent, archive completed changes, and auto-refresh project documentation to stay in sync.",
+    "developerName": "Axl Sun",
+    "category": "Development",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Start full dev flow: discover my project and let's build something",
+      "I have a new feature idea — let's grill it before we code"
+    ],
+    "brandColor": "#6366F1"
+  }
+}
