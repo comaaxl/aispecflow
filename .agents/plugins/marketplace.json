@@ -1,0 +1,22 @@
+{
+  "name": "aispecflow",
+  "description": "AISpecFlow — Full development lifecycle plugin with 7 skills: discover, grill, spec, TDD, review, archive, refresh docs",
+  "owner": {
+    "name": "Axl Sun"
+  },
+  "plugins": [
+    {
+      "name": "aispecflow",
+      "description": "Full development lifecycle: repo discovery → requirements grill → spec-driven design → TDD implementation → code review → archive → docs refresh",
+      "version": "1.0.0",
+      "source": {
+        "source": "url",
+        "url": "./"
+      },
+      "author": {
+        "name": "Axl Sun"
+      },
+      "category": "Development"
+    }
+  ]
+}
