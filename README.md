@@ -100,8 +100,8 @@ your-project/
 ### Claude Code
 
 ```bash
-claude plugins marketplace add https://github.com/comaaxl/aispecflow.git
-claude plugins install aispecflow@aispecflow
+claude plugin marketplace add comaaxl/aispecflow
+claude plugin install aispecflow@aispecflow
 ```
 
 ### Codex
