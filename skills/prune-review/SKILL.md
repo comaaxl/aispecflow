@@ -21,6 +21,14 @@ Dispatch an independent code reviewer subagent to evaluate the implementation ag
 - When stuck (fresh perspective)
 - Before large refactors
 
+## Platform Adaptation
+
+Different agent platforms have different support for key capabilities (e.g., dispatching subagents). Before running this skill, check whether your harness has special instructions.
+
+If your harness appears here, read its reference file for platform-specific setup:
+
+- Codex: `references/codex-tools.md`
+
 ## Process
 
 ### Step 0: Ask the User What to Review
