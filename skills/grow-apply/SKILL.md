@@ -42,15 +42,23 @@ mixing unrelated changes into "this change".
 
 **No git** - STOP and ask the user:
 
-> "This project has no git. You can continue, but review will be degraded:
-> - Cannot record a change base; change-level review degrades to the whole
->   working tree (imprecise)
-> - Task-level review unavailable (no task commit boundaries)
-> - No rollback; progress recovery relies only on tasks.md checkboxes
-> Continue? Or `git init` first (recommended)?"
+> "This project has no git. What do you want to do?
+> 1. **`git init` first (recommended)** - I run `git init`, commit the current
+>   files as the initial commit, then start over with full review support (base
+>   recording, task-level review, rollback, recovery).
+> 2. **Continue without git** - Proceed, but review is degraded:
+>   - Cannot record a change base; change-level review degrades to the whole
+>     working tree (imprecise)
+>   - Task-level review unavailable (no task commit boundaries)
+>   - No rollback; progress recovery relies only on tasks.md checkboxes"
 
-If the user continues: write the state file with `base: no-git` and force
-`per_task_review: off`.
+**If the user picks `git init`**: run `git init`, stage and commit the current
+files as an initial commit (`git add -A && git commit -m "Initial commit"`),
+then treat this as the "clean tree" case above - record `base` from that commit
+and continue with full review support. Do NOT write `base: no-git`.
+
+**If the user picks continue without git**: write the state file with
+`base: no-git` and force `per_task_review: off`.
 
 ### Step 1: Select the change
 
