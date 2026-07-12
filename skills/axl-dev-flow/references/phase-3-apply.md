@@ -8,10 +8,14 @@ task-level review and git checkpoint commits.
 Run `/grow-apply`
 
 ## What Happens
-1. **Step 0 - Git state check**: detect git availability and working-tree
-   cleanliness. Clean tree -> record BASE, write apply state file. Dirty tree ->
-   stop and ask the user (commit / stash / abort). No git -> stop and ask
-   (continue degraded / `git init`).
+1. **Step 0 - Git state check + resume check**: first, if an apply state file
+   already exists, cross-check it against tasks.md and git log - if inconsistent
+   or incomplete (previous apply interrupted), stop and ask the user how to
+   resume (continue from first incomplete task / re-review last task / abort).
+   Then detect git availability and working-tree cleanliness. Clean tree ->
+   record BASE, write apply state file. Dirty tree -> stop and ask the user
+   (commit / stash / abort). No git -> stop and ask (continue degraded /
+   `git init`).
 2. Agent selects the change
 3. Agent runs `openspec instructions apply` to get context
 4. Agent asks the user three questions, one at a time:

@@ -23,6 +23,46 @@ Before anything else, detect git availability and working-tree cleanliness. This
 determines whether review ranges can be computed and whether task-level review is
 available. See `references/apply-state.md` for the state file format.
 
+**Resume check (do this first, before recording a new BASE).** If a state file
+already exists for this change, a previous `/grow-apply` may not have finished.
+Do NOT blindly overwrite it. Cross-check three sources:
+
+1. The state file's `base` and `head` fields.
+2. `tasks.md` checkboxes - how many tasks are marked `[x]`.
+3. `git log <base>..HEAD --oneline` - how many `task(...)` / `fix(review-task-...)`
+   commits actually exist.
+
+If they are consistent and all tasks are complete, the previous apply finished
+normally - proceed to start fresh (you may overwrite the state file). If they are
+inconsistent OR there are incomplete tasks, the previous apply was interrupted.
+STOP and ask the user:
+
+> "I found an existing apply state for this change - the previous `/grow-apply`
+> may not have finished. Here's what I see:
+> - tasks.md: <N> of <M> tasks marked complete
+> - git log since base: <list of task/fix commits>
+> - last checkpoint (head): <sha>
+>
+> Task-level review ranges and in-progress task state are NOT fully recoverable -
+> a task interrupted mid-implementation or mid-fix may have half-finished work.
+> How do you want to proceed?
+> 1. **Continue from the first incomplete task** - I resume at the first task not
+>   marked `[x]`. Note: the interrupted task's in-progress state is lost; I'll
+>   re-implement it from scratch (its half-finished changes, if any, should be
+>   checked first).
+> 2. **Re-review the last completed task first** - I run `/prune-review` on the
+>   most recent checkpoint before continuing, in case it was marked done with
+>   unresolved issues.
+> 3. **Abort** - I'll inspect the state myself and come back."
+
+If the user picks 1: before re-implementing the interrupted task, check the
+working tree and `git status` for half-finished changes from that task; offer to
+commit or discard them (do not silently carry them into the re-implementation).
+If the user picks 2: run the review, resolve findings, then continue from the
+first incomplete task.
+
+If no state file exists, this is a fresh apply - proceed.
+
 **Has git + clean tree** - record BASE and write the state file:
 ```bash
 BASE=$(git rev-parse HEAD)
@@ -342,6 +382,7 @@ tree (imprecise); project-level review is unaffected.
 - **Verify RED every time.** Never skip verification (in TDD mode).
 - **Mark tasks one at a time.** Replace the exact line, never batch regex across the whole file.
 - **Dirty working tree must be asked about.** Never proceed without an explicit user choice.
+- **Resume check before overwriting state.** If a state file exists, cross-check it against tasks.md and git log; if inconsistent or incomplete, ask the user how to resume - never blindly overwrite or blindly continue.
 - **No-git must be explained and asked about.** Never silently continue.
 - **Review is always an independent read-only subagent.** grow-apply only triggers and fixes; it never acts as reviewer.
 - **Only append commits, never rewrite history.** No amend, no default squash.

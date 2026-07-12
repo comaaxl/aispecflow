@@ -49,16 +49,30 @@ head: <sha>            # most recent checkpoint commit (for task-level range)
 
 ## Recovery Semantics
 
-Conversation memory does not survive compaction. After a compaction or resume,
-recover progress by cross-checking three sources:
+Conversation memory does not survive compaction or an interrupted session. When
+`/grow-apply` restarts and finds an existing state file, it runs a **resume
+check** (see the SKILL.md Step 0): cross-check three sources -
 
 1. This state file - `base`, `head`, chosen modes.
 2. `tasks.md` checkboxes - which tasks are marked `[x]`.
-3. `git log` - the actual commits that exist.
+3. `git log <base>..HEAD` - the actual `task(...)` / `fix(review-task-...)`
+   commits that exist.
 
-Trust the state file and `git log` over recollection. Tasks listed as complete
-in `tasks.md` AND backed by a checkpoint commit in `git log` are done; resume at
-the first task not meeting both conditions.
+**What is recoverable:** which tasks are complete (a task marked `[x]` AND backed
+by a checkpoint commit is done). The boundary between completed and incomplete
+tasks is reliable.
+
+**What is NOT recoverable:** the in-progress state of the interrupted task
+itself. If a task was interrupted mid-implementation (half-written code) or
+mid-fix (some review findings fixed, some not), that intra-task state is not
+recorded anywhere. The state file and git log only show task-level boundaries.
+Restarting re-implements the interrupted task from scratch - first checking the
+working tree for half-finished changes to commit or discard, not silently
+carrying them forward.
+
+Trust the state file and `git log` over recollection. If the three sources are
+inconsistent or there are incomplete tasks, ask the user how to resume - do not
+blindly overwrite the state file or blindly continue.
 
 ## No-Git Handling
 
