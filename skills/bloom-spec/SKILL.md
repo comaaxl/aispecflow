@@ -95,7 +95,7 @@ Do **not** invent a capability name on your own.
 ```
 - [ ] X.Y Task description
 ```
-No TDD annotations in the tasks file — TDD discipline is handled by `/grow-apply`.
+ Each task should scope the minimum behavior needed - no speculative or future-proofing tasks (YAGNI).
 
 ### Step 4: Show final status
 

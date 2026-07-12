@@ -93,6 +93,7 @@ For each pending task in `tasks.md`:
 **GREEN — Write minimal code**
 - Only enough code to make THIS test pass
 - Don't add features, abstractions, or "future-proofing"
+- YAGNI: no speculative parameters, branches, or flexibility the test doesn't require
 - Don't refactor other code
 
 **VERIFY GREEN — Watch it pass**
@@ -103,6 +104,7 @@ For each pending task in `tasks.md`:
 **REFACTOR — Clean up**
 - Only after all tests pass
 - Extract duplication, improve names, extract helpers
+- DRY: eliminate repeated logic, but stop at extraction the tests justify - don't abstract speculatively
 - Keep tests green after each refactor step
 - Don't add behavior during refactoring
 
@@ -130,6 +132,7 @@ When the user chooses straight implementation:
 For each pending task:
 - Make the code changes required
 - Keep changes minimal and focused
+- YAGNI: only what the task requires - no speculative features or premature abstraction
 - Verify the change works
 - Mark task complete: replace the specific `- [ ] X.Y ...` line with `- [x] X.Y ...` — **one line at a time, no batch regex**
 - Continue to next task
