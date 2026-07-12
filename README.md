@@ -27,8 +27,8 @@ No custom planning system, no lock-in. Each skill works on its own. Use them tog
 | 0 | `terrain-scan` | Discover | Scan codebase → `docs/project-overview.md` |
 | 1 | `seed-grill` | Grill | Relentless requirements interview → `docs/requirements.md`, `CONTEXT.md`, ADRs |
 | 2 | `bloom-spec` | Spec | OpenSpec propose → proposal, specs, design, tasks |
-| 3 | `grow-apply` | Apply | Implement tasks with TDD or straight (user choice) |
-| 4 | `prune-review` | Review | Independent subagent code review against requirements |
+| 3 | `grow-apply` | Apply | Implement tasks with TDD or straight (user choice) + git checkpoint commits + optional task-level review |
+| 4 | `prune-review` | Review | Three-level review: task / change / project via independent subagent |
 | 5 | `harvest-archive` | Archive | Sync specs, archive change, optional requirements archival |
 | 6 | `renew-docs` | Refresh | Keep README + project-overview current (change-based or full refresh) |
 | O | `axl-dev-flow` | Orchestrator | Full lifecycle: discover → grill → spec → apply → review → archive → refresh |
@@ -114,7 +114,28 @@ codex plugin add aispecflow@aispecflow
 ## Prerequisites
 
 - [OpenSpec CLI](https://github.com/Fission-AI/openspec): `npm install -g @fission-ai/openspec`
-- Git: required for code review diff
+- Git: required for task-level and change-level review ranges (grow-apply records a base commit and per-task checkpoints). Project-level review works without git. Without git, grow-apply still implements tasks, but task-level review is unavailable and change-level review degrades to the whole working tree.
+
+## Optional: Worktree for isolated changes
+
+This plugin does not manage git worktrees itself, but it is fully transparent to
+them. If you prefer to isolate a change from your main branch, you can create a
+worktree yourself and run the whole flow inside it:
+
+```bash
+git worktree add ../myapp-my-change -b my-change
+cd ../myapp-my-change
+# Run /axl-dev-flow (or /grow-apply -> /prune-review -> /harvest-archive) here.
+# All git commands act on the my-change branch because they are relative to
+# the current directory. The change-level review range (base..HEAD) is simply
+# "from the worktree's branch point to now" - clean.
+# When done, merge back to main (merge, not rebase, by default):
+cd - && git merge my-change
+git worktree remove ../myapp-my-change
+```
+
+Commit before merging - uncommitted changes in the worktree are not carried
+over by `git merge` and are lost if you remove the worktree.
 
 ## License
 

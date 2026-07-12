@@ -37,10 +37,16 @@ Read the tasks file (typically `tasks.md`). Count `- [ ]` (incomplete) vs `- [x]
 
 **If no tasks file**: proceed without task-related warning.
 
-### Step 4: Verify review
+### Step 4: Review reminder (soft, non-blocking)
 
-Confirm that code review has been completed and all Critical + Important issues are resolved. If not:
-> "This change hasn't been reviewed yet. Run `/prune-review` first? Archiving without review means issues may go unnoticed."
+Check whether code review has been done. This is a reminder, not a gate - you can
+still archive without review. If review hasn't been done:
+> "This change hasn't been reviewed yet. It's recommended to run
+> `/prune-review` (change-level or project-level) first. You can still archive
+> without review, but issues may go unnoticed and be carried into the archive.
+> Proceed with archiving, or review first?"
+
+Let the user decide. Do not block archiving if they choose to proceed.
 
 ### Step 5: Assess delta spec sync state
 

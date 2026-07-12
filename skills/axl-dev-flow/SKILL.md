@@ -59,9 +59,9 @@ Orchestrate the complete development lifecycle through 7 phases:
 
 **When to run**: After specs and tasks are ready.
 
-**What happens**: Run `/grow-apply` to implement all tasks using TDD (RED → GREEN → REFACTOR per task).
+**What happens**: Run `/grow-apply` to implement all tasks using TDD (RED -> GREEN -> REFACTOR per task), with a git state check, checkpoint commits per task, and optional task-level review.
 
-**Completion criterion**: All tasks checked, all tests green, no skipped tests.
+**Completion criterion**: All tasks checked, all tests green, no skipped tests, apply state file recorded (base + head).
 
 **Prerequisites**: `tasks.md` exists with checkbox tasks.
 
@@ -71,11 +71,11 @@ Orchestrate the complete development lifecycle through 7 phases:
 
 **When to run**: After all tasks are implemented.
 
-**What happens**: Run `/prune-review` to dispatch a code reviewer subagent. Fix Critical and Important issues.
+**What happens**: Run `/prune-review` to dispatch a code reviewer subagent at the change level (default) or project level. Fix Critical and Important issues.
 
 **Completion criterion**: Reviewer verdict is "Approved" or "With fixes" and all Critical + Important issues resolved.
 
-**Prerequisites**: All tasks complete, code committed.
+**Prerequisites**: All tasks complete, code committed (grow-apply checkpoint commits or user-committed).
 
 > "Phase 4: Let's review the code. Run `/prune-review`?"
 
