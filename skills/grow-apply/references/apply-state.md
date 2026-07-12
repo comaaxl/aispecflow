@@ -9,11 +9,8 @@ and progress can survive compaction.
 openspec/changes/<change>/.aispecflow-apply-state.md
 ```
 
-Lives inside the change directory. OpenSpec's `archive` command moves the whole
-change directory to `archive/`, so this file travels with it - the CLI does not
-strip unknown files (verified against OpenSpec 1.4.1). Because `openspec/` is
-checked into git by default, the file is version-controlled and survives
-`git clean` and context compaction.
+Lives inside the change directory and travels with it into `archive/` when the
+change is archived.
 
 ## Fields
 
