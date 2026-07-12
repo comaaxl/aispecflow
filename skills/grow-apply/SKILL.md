@@ -164,8 +164,8 @@ For each pending task in `tasks.md`:
 │  │  REPEAT: next test for this task       │  │
 │  └────────────────────────────────────────┘  │
 │                                             │
-│  ✓ Mark task complete: `- [x] X.Y ...`     │
 │  ↻ Checkpoint commit + optional review     │
+│  ✓ Mark task complete: `- [x] X.Y ...`     │
 └─────────────────────────────────────────────┘
 ```
 
@@ -207,27 +207,26 @@ For each pending task in `tasks.md`:
 
 After all tests for a task pass:
 
-1. **Mark the task complete** in `tasks.md`: replace the specific `- [ ] X.Y ...`
-   line with `- [x] X.Y ...`. **One line at a time. Never use global regex or
-   batch sed across the entire file.**
-
-2. **Checkpoint commit** (skip if no git):
+1. **Checkpoint commit** (skip if no git). First capture the pre-task commit as
+   this task's review base, then commit:
    ```bash
+   TASK_BASE=$(git rev-parse HEAD)   # the commit before this task's changes
    git add -A
    git commit -m "task(X.Y): <description>"
    ```
-   Update the state file's `head` field to this commit's SHA. This checkpoint is
-   what task-level review scopes against (`head..HEAD`).
+   The task-level review range is `TASK_BASE..HEAD`. Update the state file's
+   `head` field to the new commit's SHA after committing (so the next task's
+   `TASK_BASE` is this commit).
 
-3. **Task-level review** (only if `per_task_review: on`; every task triggers it):
+2. **Task-level review** (only if `per_task_review: on`; every task triggers it):
    Hand control to `/prune-review` at the **task level**. State:
    > "Triggering task-level review for task X.Y. Handing control to
    > `/prune-review` (task-level)."
 
    - The review is always performed by an independent, read-only reviewer
      subagent - it cannot see this conversation. It only reads the task notes,
-     the diff for this task, and the relevant spec files. **grow-apply itself
-     never acts as the reviewer.**
+     the diff for this task (`TASK_BASE..HEAD`), and the relevant spec files.
+     **grow-apply itself never acts as the reviewer.**
    - When the reviewer returns issues, come back here and verify each one
      (read -> understand -> check against code reality -> evaluate -> respond ->
      fix). Distinguish real fixes from pushback (push back with technical
@@ -245,6 +244,12 @@ After all tests for a task pass:
      automatic**. This avoids review-fix-review loops and subagent overuse.
    - Review logic lives in `/prune-review`. grow-apply only triggers it and
      handles the fixes.
+
+3. **Mark the task complete** in `tasks.md` - only AFTER review findings are
+   resolved (or review was not enabled / not triggered). Replace the specific
+   `- [ ] X.Y ...` line with `- [x] X.Y ...`. **One line at a time. Never use
+   global regex or batch sed across the entire file.** A task is not "complete"
+   while it still has unresolved Critical/Important review issues.
 
 4. Show progress: "Task X.Y complete (N/M done)"
 
@@ -267,9 +272,10 @@ For each pending task:
 - Keep changes minimal and focused
 - YAGNI: only what the task requires - no speculative features or premature abstraction
 - Verify the change works
-- Mark task complete: replace the specific `- [ ] X.Y ...` line with `- [x] X.Y ...` - **one line at a time, no batch regex**
-- **Checkpoint commit + optional task-level review** - same as the TDD outer loop
-  (steps 2-3 above), just without the RED-GREEN-REFACTOR inner loop
+- **Checkpoint commit + optional task-level review, then mark complete** - same
+  order as the TDD outer loop (steps 1-3 above: checkpoint commit -> review +
+  fix -> mark `[x]`), just without the RED-GREEN-REFACTOR inner loop. Do not
+  mark the task complete while it has unresolved review issues.
 - Continue to next task
 
 ## What to Test

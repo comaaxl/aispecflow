@@ -31,8 +31,11 @@ head: <sha>            # most recent checkpoint commit (for task-level range)
 - `base` - the starting point of this change. `BASE..HEAD` is the change-level
   review range. `no-git` means git is unavailable; change-level review degrades
   to the whole working tree.
-- `head` - updated after each checkpoint commit. `head..HEAD` is the task-level
-  review range for the most recent task.
+- `head` - the most recent checkpoint commit. Updated after each task's
+  checkpoint commit. The current task's review range is captured at commit time
+  as `TASK_BASE..HEAD` (where `TASK_BASE` is the commit before this task's
+  changes - i.e. the previous `head`). After commit, `head` advances to the new
+  commit so the next task's `TASK_BASE` is this commit.
 - `per_task_review` - `on` (default when git is available) means every task
   triggers a task-level review after its checkpoint commit. Forced `off` when
   there is no git (no task commit boundaries to review against).
