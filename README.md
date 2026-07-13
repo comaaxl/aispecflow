@@ -1,3 +1,5 @@
+[English](./README.md) | [中文](./README-zh.md)
+
 # aispecflow
 
 A complete development lifecycle plugin for AI coding agents — from project discovery to docs refresh, all in one plugin.
