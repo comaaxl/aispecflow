@@ -12,9 +12,9 @@ Superpowers comes closest to a full workflow, but it's heavy — it brings its o
 
 **aispecflow** fills that gap. It stitches together the best ideas from these tools into a single, lightweight plugin:
 
-- Grill-style requirements interviewing (inspired by [Grill Me](https://github.com/mattpocock/skills) )
-- OpenSpec's spec-driven artifacts (proposal → specs → design → tasks, inspired by [OpenSpec](https://github.com/Fission-AI/openspec))
-- TDD implementation discipline (inspired by [Superpowers](https://github.com/obra/superpowers) )
+- Grill-style requirements interviewing
+- OpenSpec's spec-driven artifacts (proposal → specs → design → tasks)
+- TDD implementation discipline
 - Independent subagent code review
 - Documentation sync after every change
 
@@ -114,28 +114,37 @@ codex plugin add aispecflow@aispecflow
 ## Prerequisites
 
 - [OpenSpec CLI](https://github.com/Fission-AI/openspec): `npm install -g @fission-ai/openspec`
-- Git: required for task-level and change-level review ranges (grow-apply records a base commit and per-task checkpoints). Project-level review works without git. Without git, grow-apply still implements tasks, but task-level review is unavailable and change-level review degrades to the whole working tree.
+- Git: required for per-task and change-level review ranges. Project-level review works without git. Without git, grow-apply still implements tasks, but per-task subagent review is unavailable and change-level review degrades to the whole working tree.
+
+## How grow-apply uses git
+
+grow-apply integrates with git so review ranges are well-defined and progress
+survives interruptions:
+
+- **Startup check** - before implementing, it checks the working tree. A dirty
+  tree is flagged (uncommitted changes would pollute review diffs); you choose
+  to commit, stash, or abort. With no git, it offers to `git init` or continue
+  degraded.
+- **Base + per-task checkpoints** - it records a base commit at start, and
+  commits each task as a checkpoint (`task(X.Y): ...`). Change-level review
+  scopes to `base..HEAD`; per-task review scopes to `TASK_BASE..HEAD`.
+- **Self-review before each commit** - after a task's tests pass, the main
+  conversation does a quick self-review (inline fixes, re-test) *before* the
+  checkpoint commit, so the commit reflects the reviewed state.
+- **Apply state file** - `openspec/changes/<change>/.aispecflow-apply-state.md`
+  records base, head, last completed task, and your review/fix choices. On
+  restart after an interruption, grow-apply cross-checks it against tasks.md
+  and git log, and asks how to resume rather than blindly continuing.
+- **Append-only commits** - it only ever adds commits (`task(...)`,
+  `fix(review-task-X): ...`); never amends or squashes by default. Merge back
+  to main uses merge, not rebase.
 
 ## Optional: Worktree for isolated changes
 
 This plugin does not manage git worktrees itself, but it is fully transparent to
-them. If you prefer to isolate a change from your main branch, you can create a
-worktree yourself and run the whole flow inside it:
-
-```bash
-git worktree add ../myapp-my-change -b my-change
-cd ../myapp-my-change
-# Run /axl-dev-flow (or /grow-apply -> /prune-review -> /harvest-archive) here.
-# All git commands act on the my-change branch because they are relative to
-# the current directory. The change-level review range (base..HEAD) is simply
-# "from the worktree's branch point to now" - clean.
-# When done, merge back to main (merge, not rebase, by default):
-cd - && git merge my-change
-git worktree remove ../myapp-my-change
-```
-
-Commit before merging - uncommitted changes in the worktree are not carried
-over by `git merge` and are lost if you remove the worktree.
+them. You can create a worktree yourself and run the whole flow inside it - all
+git commands act on the worktree's branch because they are relative to the
+current directory. Commit your work before merging back to main.
 
 ## License
 
