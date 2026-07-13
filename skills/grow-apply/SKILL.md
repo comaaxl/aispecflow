@@ -25,12 +25,15 @@ available. See `references/apply-state.md` for the state file format.
 
 **Resume check (do this first, before recording a new BASE).** If a state file
 already exists for this change, a previous `/grow-apply` may not have finished.
-Do NOT blindly overwrite it. Cross-check three sources:
+Do NOT blindly overwrite it. Cross-check four sources:
 
-1. The state file's `base` and `head` fields.
+1. The state file's `base`, `head`, and `last_completed_task` fields.
 2. `tasks.md` checkboxes - how many tasks are marked `[x]`.
 3. `git log <base>..HEAD --oneline` - how many `task(...)` / `fix(review-task-...)`
    commits actually exist.
+4. Cross-validate `last_completed_task` against tasks.md: if the state file says
+   task X is the last completed but tasks.md does not mark X as `[x]` (or vice
+   versa), the state is inconsistent.
 
 If they are consistent and all tasks are complete, the previous apply finished
 normally - proceed to start fresh (you may overwrite the state file). If they are
@@ -40,12 +43,14 @@ STOP and ask the user:
 > "I found an existing apply state for this change - the previous `/grow-apply`
 > may not have finished. Here's what I see:
 > - tasks.md: <N> of <M> tasks marked complete
+> - last completed task (state file): <X.Y or none>
 > - git log since base: <list of task/fix commits>
 > - last checkpoint (head): <sha>
 >
-> Task-level review ranges and in-progress task state are NOT fully recoverable -
-> a task interrupted mid-implementation or mid-fix may have half-finished work.
-> How do you want to proceed?
+> A committed-but-unmarked task (git has `task(X.Y)` but tasks.md doesn't mark
+> X.Y `[x]`) means its review was unfinished. In-progress task state
+> (half-written code, mid-self-review fixes) is NOT recoverable. How do you want
+> to proceed?
 > 1. **Continue from the first incomplete task** - I resume at the first task not
 >   marked `[x]`. Note: the interrupted task's in-progress state is lost; I'll
 >   re-implement it from scratch (its half-finished changes, if any, should be
@@ -68,7 +73,8 @@ If no state file exists, this is a fresh apply - proceed.
 BASE=$(git rev-parse HEAD)
 ```
 Write `openspec/changes/<change>/.aispecflow-apply-state.md` with `base`, today's
-date as `started`, and `per_task_review: on` (default).
+date as `started`. `per_task_review` and `fix_mode` are filled in after Step 3's
+three questions (default `per_task_review: final`).
 
 **Has git + dirty tree** - STOP and ask the user. Do not proceed on a dirty tree
 without an explicit choice - uncommitted changes pollute review diff ranges,
@@ -98,7 +104,8 @@ then treat this as the "clean tree" case above - record `base` from that commit
 and continue with full review support. Do NOT write `base: no-git`.
 
 **If the user picks continue without git**: write the state file with
-`base: no-git` and force `per_task_review: off`.
+`base: no-git` and force `per_task_review` to `final` or `none` (`every` needs
+commit boundaries).
 
 ### Step 1: Select the change
 
@@ -136,32 +143,40 @@ If **TDD**: follow "The TDD Implementation Loop" below.
 If **Straight**: for each task, make code changes, verify they work, mark
 complete, move on. Skip the RED-GREEN-REFACTOR inner loop.
 
-**Question 2 - Task-level review during implementation:**
+**Question 2 - Subagent review depth:**
 
-First explain: review is done by an independent, read-only reviewer (it cannot
-see this conversation - it only reads code and task notes) that catches
-implementation-vs-requirement gaps, over-engineering, missing tests. Regardless
-of this choice, you can do a full change-level review after all tasks are done.
-This question is whether to also review after each task.
+First explain: after each task's tests pass, the main conversation always does a
+quick **self-review** (a checklist pass - see `references/self-review-checklist.md`)
+and fixes what it finds, inline. That is the baseline, always on, no subagent.
 
-> "Do task-level review during implementation?
-> 1. **Yes (recommended, default)** - Review after each task is done. Catches
->    problems early; useful when there are many tasks or you worry about drift.
->    Cost: one extra review round per task.
-> 2. **No** - Only review once after everything is done. Saves effort when tasks
->    are few and changes are direct."
+This question is whether to ALSO dispatch an independent read-only subagent
+reviewer (it cannot see this conversation - it reads code and task notes, and
+catches blind spots self-review misses), and at what granularity:
 
-When there is no git: skip this question, force "No", and explain why (no task
-commit boundaries - the reviewer cannot scope a single task's changes).
+> "Beyond the always-on self-review, do you want an independent subagent review?
+> 1. **After every task** - self-review, then a subagent reviews each task.
+>    Catches blind spots early. Cost: one subagent round per task (slow).
+> 2. **Once at the end (recommended, default)** - only self-review per task;
+>    after all tasks are done, one subagent reviews the whole change. Fast
+>    during implementation, with an independent backstop at the end.
+> 3. **No subagent review** - only self-review. Fastest. For few tasks, direct
+>    changes, when you're confident."
 
-**Question 3 - How to fix review findings** (only if Question 2 is "Yes"; asked
-**once** and recorded for the whole apply session):
+- Store the choice as `per_task_review`: `every` / `final` / `none`.
+- When there is no git: option 1 is unavailable (no task commit boundaries for
+  the subagent to scope). Force option 2 or 3, and explain why.
 
-First explain: the reviewer only flags problems, it does not change code. Once
-problems are flagged, someone has to fix them. This choice is recorded and
-reused for every task - not re-asked.
+**Question 3 - How to fix subagent review findings** (asked when Question 2 is
+`every` or `final` - i.e. a subagent WILL be dispatched; skipped when `none`;
+asked **once** and recorded for the whole apply session):
 
-> "How would you like review findings fixed?
+First explain: the subagent reviewer only flags problems, it does not change
+code. Once problems are flagged, someone has to fix them. This choice is
+recorded and reused for every subagent review (per-task or final) - not
+re-asked. (Self-review findings are always fixed inline - this choice does not
+apply to them.)
+
+> "How would you like subagent review findings fixed?
 > 1. **I fix them in this conversation (recommended, when issues are few)** -
 >    The reviewer lists the problems; I verify each and fix them here, then
 >    recommit. Simple and direct.
@@ -173,10 +188,12 @@ reused for every task - not re-asked.
 Both options recommit (new commits only, never rewrite history). After fixing,
 control returns here so **you** decide whether to re-review (not automatic).
 
-Write all three answers to the state file: `mode`, `per_task_review`, `fix_mode`.
+Write all three answers to the state file: `mode`, `per_task_review`, `fix_mode`
+(`fix_mode` is unset when `per_task_review: none`).
 
-Note: **Review is always done by an independent read-only subagent - it is not
-a choice.** Question 3 only asks how fixes are done, not how review is done.
+Note: **Subagent review (when enabled) is always an independent read-only
+subagent - that is not a choice.** Question 3 only asks how fixes are done, not
+how review is done. Self-review is always the main conversation, always inline.
 
 ### Step 4: Show current state
 
@@ -204,7 +221,9 @@ For each pending task in `tasks.md`:
 │  │  REPEAT: next test for this task       │  │
 │  └────────────────────────────────────────┘  │
 │                                             │
-│  ↻ Checkpoint commit + optional review     │
+│  🔍 Self-review (always) + fix + re-test   │
+│  ↻ Checkpoint commit                        │
+│  ✓ Optional subagent review (per_task_review)│
 │  ✓ Mark task complete: `- [x] X.Y ...`     │
 └─────────────────────────────────────────────┘
 ```
@@ -247,19 +266,28 @@ For each pending task in `tasks.md`:
 
 After all tests for a task pass:
 
-1. **Checkpoint commit** (skip if no git). First capture the pre-task commit as
-   this task's review base, then commit:
+1. **Self-review** (always, every task - this is the baseline). Run through the
+   checklist in `references/self-review-checklist.md` (spec compliance, obvious
+   gaps, test quality, naming, cut corners). Fix anything you find **inline**
+   (self-review fixes are always inline - `fix_mode` does not apply to them).
+   After fixing, **re-run the tests** and confirm they still pass. Do not
+   commit until green.
+
+2. **Checkpoint commit** (skip if no git). Capture the pre-task commit, then
+   commit:
    ```bash
    TASK_BASE=$(git rev-parse HEAD)   # the commit before this task's changes
    git add -A
    git commit -m "task(X.Y): <description>"
    ```
-   The task-level review range is `TASK_BASE..HEAD`. Update the state file's
-   `head` field to the new commit's SHA after committing (so the next task's
-   `TASK_BASE` is this commit).
+   The review range is `TASK_BASE..HEAD` (covers this task's full changes,
+   including the self-review fixes). Update the state file's `head` field to
+   the new commit's SHA. Do **not** advance `last_completed_task` yet - that
+   happens only when the task is marked `[x]` (step 4), so a committed-but-
+   unmarked task is detectable as "review unfinished" on resume.
 
-2. **Task-level review** (only if `per_task_review: on`; every task triggers it):
-   Hand control to `/prune-review` at the **task level**. State:
+3. **Subagent review** (only if `per_task_review: every`; skipped for `final`
+   and `none`): hand control to `/prune-review` at the **task level**. State:
    > "Triggering task-level review for task X.Y. Handing control to
    > `/prune-review` (task-level)."
 
@@ -272,7 +300,7 @@ After all tests for a task pass:
      fix). Distinguish real fixes from pushback (push back with technical
      reasoning when the reviewer is wrong).
    - Fix according to `fix_mode` in the state file (chosen once at start, reused
-     for every task):
+     for every subagent review - per-task or final):
      - `inline` - fix here in this conversation
      - `subagent` - dispatch a fix agent (see `prune-review/references/fix-agent.md`)
    - After fixing, make a new commit:
@@ -285,15 +313,16 @@ After all tests for a task pass:
    - Review logic lives in `/prune-review`. grow-apply only triggers it and
      handles the fixes.
 
-3. **Mark the task complete** in `tasks.md` - only AFTER review findings are
-   resolved (or review was not enabled / not triggered). Replace the specific
+4. **Mark the task complete** in `tasks.md` - only AFTER self-review (and, when
+   applicable, subagent review findings) are resolved. Replace the specific
    `- [ ] X.Y ...` line with `- [x] X.Y ...`. **One line at a time. Never use
    global regex or batch sed across the entire file.** A task is not "complete"
-   while it still has unresolved Critical/Important review issues.
+   while it still has unresolved review issues. **Now** advance the state
+   file's `last_completed_task` to this task's number (e.g. `1.3`).
 
-4. Show progress: "Task X.Y complete (N/M done)"
+5. Show progress: "Task X.Y complete (N/M done)"
 
-5. Move to next task.
+6. Move to next task.
 
 ### Pause Conditions
 
@@ -312,10 +341,12 @@ For each pending task:
 - Keep changes minimal and focused
 - YAGNI: only what the task requires - no speculative features or premature abstraction
 - Verify the change works
-- **Checkpoint commit + optional task-level review, then mark complete** - same
-  order as the TDD outer loop (steps 1-3 above: checkpoint commit -> review +
-  fix -> mark `[x]`), just without the RED-GREEN-REFACTOR inner loop. Do not
-  mark the task complete while it has unresolved review issues.
+- **Self-review -> checkpoint commit -> optional subagent review -> mark complete** -
+  same order as the TDD outer loop (steps 1-4 above), just without the
+  RED-GREEN-REFACTOR inner loop. Self-review (checklist) and its inline fixes
+  happen before the checkpoint commit; subagent review runs only if
+  `per_task_review: every`; mark `[x]` only after review findings are resolved,
+  then advance `last_completed_task`.
 - Continue to next task
 
 ## What to Test
@@ -367,10 +398,20 @@ Mock at **system boundaries only**:
 - [x] Task 2: ...
 ...
 
-All tasks complete. You can now run `/prune-review` to do a
-**change-level review** (all of this change's changes, range = base..HEAD) or a
-**project-level review** (a health check on the whole codebase).
+All tasks complete.
 ```
+
+Then, based on `per_task_review` in the state file:
+
+- **`final` (the default)** - prompt: "Run `/prune-review` now for the
+  **change-level review** (range = base..HEAD) - the final independent backstop
+  you chose at startup. Findings are fixed per `fix_mode`."
+- **`every`** - each task already had a subagent review; prompt: "All tasks
+  reviewed. You can optionally run `/prune-review` for a whole-change review, or
+  `/harvest-archive` to archive."
+- **`none`** - only self-review was done; prompt: "Run `/prune-review` for a
+  **change-level review** (range = base..HEAD) or a **project-level review**
+  (whole-codebase health check)."
 
 If there is no git, note that change-level review degrades to the whole working
 tree (imprecise); project-level review is unaffected.
@@ -384,11 +425,13 @@ tree (imprecise); project-level review is unaffected.
 - **Dirty working tree must be asked about.** Never proceed without an explicit user choice.
 - **Resume check before overwriting state.** If a state file exists, cross-check it against tasks.md and git log; if inconsistent or incomplete, ask the user how to resume - never blindly overwrite or blindly continue.
 - **No-git must be explained and asked about.** Never silently continue.
-- **Review is always an independent read-only subagent.** grow-apply only triggers and fixes; it never acts as reviewer.
+- **Review is always an independent read-only subagent** (when enabled). grow-apply only triggers and fixes; it never acts as the subagent reviewer.
+- **Self-review is always the main conversation, always inline.** Every task gets it before checkpoint commit; its fixes are always inline (fix_mode does not apply).
 - **Only append commits, never rewrite history.** No amend, no default squash.
-- **A checkpoint commit must precede reviewable work** (skipped under no-git degradation).
-- **Ask the three questions one at a time.** Each option explains what happens if chosen - no bare jargon. Defaults: test-driven, task-level review on, fix in conversation.
-- **Fix mode is asked once** (at start) and reused for every task - never re-asked per task.
+- **A checkpoint commit must precede subagent reviewable work** (skipped under no-git degradation).
+- **Ask the three questions one at a time.** Each option explains what happens if chosen - no bare jargon. Defaults: test-driven, subagent review = final sweep, fix in conversation.
+- **Fix mode is asked once** (at start) when subagent review is enabled (per-task or final); reused for every subagent review - never re-asked. Skipped when `per_task_review: none`.
 - **After fixing, control returns to the user** to decide on re-review - never auto-loop review.
+- **Advance `last_completed_task` only when marking `[x]`**, not at checkpoint commit - so a committed-but-unmarked task is detectable as "review unfinished" on resume.
 - **Pause on ambiguity.** Don't guess - ask.
 - **Communicate in the user's language.** Match the language the user writes in throughout the session. Never mix languages in a single response.

@@ -19,9 +19,10 @@ change is archived.
 base: <sha>            # HEAD at grow-apply start, or "no-git" if no git
 started: <date>        # when grow-apply started
 mode: tdd|straight     # implementation mode chosen by the user
-per_task_review: on|off  # whether task-level review fires after each task
-fix_mode: inline|subagent  # how review findings get fixed
-head: <sha>            # most recent checkpoint commit (for task-level range)
+per_task_review: every|final|none  # subagent review depth (self-review is always on)
+fix_mode: inline|subagent  # how subagent review findings get fixed (unset when none)
+head: <sha>            # most recent checkpoint commit
+last_completed_task: 1.3  # last task marked [x] (empty until first task completes)
 ---
 ```
 
@@ -30,41 +31,60 @@ head: <sha>            # most recent checkpoint commit (for task-level range)
   to the whole working tree.
 - `head` - the most recent checkpoint commit. Updated after each task's
   checkpoint commit. The current task's review range is captured at commit time
-  as `TASK_BASE..HEAD` (where `TASK_BASE` is the commit before this task's
-  changes - i.e. the previous `head`). After commit, `head` advances to the new
-  commit so the next task's `TASK_BASE` is this commit.
-- `per_task_review` - `on` (default when git is available) means every task
-  triggers a task-level review after its checkpoint commit. Forced `off` when
-  there is no git (no task commit boundaries to review against).
+  as `TASK_BASE..HEAD` (where `TASK_BASE` is `git rev-parse HEAD` before the
+  commit - i.e. the previous `head`). `head` is primarily for resume recovery
+  and the change-level review range; `TASK_BASE` is always read live from git,
+  not from this field (more robust - doesn't depend on state-file consistency).
+- `per_task_review` - subagent review depth:
+  - `every` - subagent reviews after each task (self-review + subagent per task)
+  - `final` (default when git is available) - only self-review per task; one
+    subagent reviews the whole change at the end
+  - `none` - only self-review; no subagent
+  - Forced `none`/`final` when there is no git (`every` needs commit boundaries).
+- `last_completed_task` - the number of the last task marked `[x]` (e.g. `1.3`).
+  Advanced **only when the task is marked `[x]`**, NOT at checkpoint commit - so
+  a committed-but-unmarked task (review unfinished) is detectable on resume.
+  Empty until the first task completes.
 
 ## Read/Write Timing
 
 - **grow-apply start**: write the file with `base`, `started`, `mode`,
-  `per_task_review`, `fix_mode`. `head` is left unset until the first checkpoint.
+  `per_task_review`, `fix_mode` (unset if `none`). `head` and
+  `last_completed_task` are left empty until the first checkpoint / completion.
 - **After each checkpoint commit**: update `head` to the new commit's SHA.
+- **When a task is marked `[x]`**: advance `last_completed_task` to that task's
+  number.
 - **Archive**: the file moves into `archive/` with the change. No manual cleanup.
 
 ## Recovery Semantics
 
 Conversation memory does not survive compaction or an interrupted session. When
 `/grow-apply` restarts and finds an existing state file, it runs a **resume
-check** (see the SKILL.md Step 0): cross-check three sources -
+check** (see the SKILL.md Step 0): cross-check four sources -
 
-1. This state file - `base`, `head`, chosen modes.
+1. This state file - `base`, `head`, `last_completed_task`, chosen modes.
 2. `tasks.md` checkboxes - which tasks are marked `[x]`.
 3. `git log <base>..HEAD` - the actual `task(...)` / `fix(review-task-...)`
    commits that exist.
+4. **Cross-validate `last_completed_task`** against tasks.md: if the state file
+   says task X is complete but tasks.md does not mark X as `[x]` (or vice
+   versa), the state is inconsistent - stop and ask the user.
 
-**What is recoverable:** which tasks are complete (a task marked `[x]` AND backed
-by a checkpoint commit is done). The boundary between completed and incomplete
-tasks is reliable.
+**What is recoverable:** which tasks are complete (a task marked `[x]` AND
+backed by a checkpoint commit AND reflected in `last_completed_task` is done).
+The boundary between completed and incomplete tasks is reliable.
+
+**Detectable "half-done" state:** if `git log` has a `task(X.Y)` commit but
+tasks.md does not mark X.Y as `[x]` and `last_completed_task` is still the
+previous task, then X.Y was committed but its review was not finished. Stop and
+ask: continue the review, or discard the commit and redo.
 
 **What is NOT recoverable:** the in-progress state of the interrupted task
 itself. If a task was interrupted mid-implementation (half-written code) or
-mid-fix (some review findings fixed, some not), that intra-task state is not
-recorded anywhere. The state file and git log only show task-level boundaries.
-Restarting re-implements the interrupted task from scratch - first checking the
-working tree for half-finished changes to commit or discard, not silently
+mid-self-review (some inline fixes done, some not), that intra-task state is not
+recorded anywhere. Restarting re-implements the interrupted task from scratch -
+first checking the working tree for half-finished changes to commit or discard,
+not silently
 carrying them forward.
 
 Trust the state file and `git log` over recollection. If the three sources are
