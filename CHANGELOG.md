@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.4] - 2026-07-18
+
+### Changed
+- `prune-review`: Security promoted to a standalone axis in `task-reviewer.md` and `change-reviewer.md` (was buried as a bullet under Architecture; task-level had no Security check at all)
+- `prune-review`: Important+ structural issues now require a named remedy (replace conditional chain with dispatcher / collapse duplicate branches / separate orchestration from business logic / move feature logic out of shared module / reuse canonical helper / make type boundary explicit / delete pass-through wrapper / extract helper or split file), so fixes stay surgical instead of vague signals
+- `prune-review`: added a 4-level disagreement resolution hierarchy (technical facts > project style guide > software design principles > codebase consistency) to make pushback reasoned
+- `prune-review`: added dead-code "report and ask, never auto-delete" sections to all three reviewer templates, aligned with `fix-agent.md`'s existing no-delete discipline
+- `prune-review` (project-level): split the combined Dependencies & Security section into separate Dependencies (audit, lockfile, isolated upgrades, maintenance, transitive graph) and Security sections, plus a dedicated dead-code health-check section
+
 ## [1.1.0] - 2026-07-12
 
 ### Added
