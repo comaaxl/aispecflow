@@ -49,11 +49,25 @@ Task: "Review a single task's changes"
     - DRY without premature abstraction?
     - Edge cases handled?
 
+    **Security:**
+    - User input validated at the boundary this task touches?
+    - SQL parameterized (no string concatenation) if this task touches the DB?
+    - Secrets kept out of code, logs, and version control?
+    - Auth/authz checks present where this task adds a sensitive path?
+
     **Testing:**
     - Tests verify real behavior, not mocks of internal collaborators?
     - Edge cases covered?
     - All tests passing? (trust the implementer's report unless the diff
       contradicts it)
+
+    **Dead code (report, do not auto-delete):**
+    - Code made unreachable or unused by THIS task (orphaned imports,
+      variables, functions, wrappers this task made redundant)?
+    - List each with file:line. Mark Important if this task caused it.
+    - Do NOT flag pre-existing dead code as an issue - at most note it as a
+      question in your report. Never direct the fix agent to delete code the
+      task did not orphan.
 
     **Do NOT check cross-task consistency** - that is change-level review's job.
     Stay within this task's scope.
@@ -92,6 +106,15 @@ Task: "Review a single task's changes"
     - What is wrong
     - Why it matters
     - How to fix (if not obvious)
+    - Remedy name (Required for Important+ structural issues only: coupling,
+      responsibility placement, abstraction level, duplication, tangled
+      conditionals - NOT pure bugs/security/perf). Pick from: replace a
+      conditional chain with a typed model or dispatcher; collapse duplicate
+      branches into one flow; separate orchestration from business logic; move
+      feature-specific logic out of a shared module; reuse the existing canonical
+      helper; make a type boundary explicit; delete a pass-through wrapper;
+      extract a helper or split a large file. Naming the remedy keeps the fix
+      surgical instead of leaving the fixer guessing.
 
     ### Assessment
 

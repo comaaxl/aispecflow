@@ -39,14 +39,36 @@ Task: "Project health check"
     - Any architectural erosion or drift from sound patterns?
 
     **Technical debt:**
-    - Accumulated workarounds, TODO/FIXME density, dead code?
+    - Accumulated workarounds, TODO/FIXME density?
     - Duplicated logic that should be consolidated?
     - Obsolete patterns or deprecated API usage?
+    - Dead code is assessed separately under "Dead code" below.
 
-    **Dependencies & security:**
-    - Outdated or vulnerable dependencies?
-    - Pinning / lockfile hygiene?
-    - Any obvious security concerns (secrets, injection surfaces, auth gaps)?
+    **Dependencies (health-check discipline):**
+    - Outdated or vulnerable dependencies? Run the project's audit
+      (`npm audit` / `pip-audit` / equivalent) and note the notable findings.
+    - Lockfile hygiene: committed, not hand-edited, diff reviewed on bumps?
+    - Are dependency upgrades isolated (one per change) or bulk-bumped with a
+      "bump deps" message and no changelog read?
+    - For each notable direct dependency: actively maintained, license-
+      compatible, and earning its place over the standard library?
+    - Transitive graph: any surprising indirect packages nobody chose directly?
+
+    **Security:**
+    - Secrets in code, logs, or version control?
+    - Injection surfaces (SQL string concatenation, unsanitized output, command
+      injection)?
+    - Auth gaps or missing authorization checks on sensitive paths?
+    - External data (APIs, logs, user content, config) treated as untrusted at
+      system boundaries?
+
+    **Dead code (report, do not auto-delete):**
+    - Accumulated unreachable code, obsolete shims, backwards-compat wrappers
+      with no remaining callers?
+    - List each with file:line or module. Mark severity by actual risk.
+    - Frame removal as a question ("candidate for removal?"), not a directive -
+      project-level review surfaces candidates for the owner to decide; it does
+      not authorize deletion.
 
     **Test coverage (overall):**
     - Is there a coherent test strategy?
@@ -95,6 +117,15 @@ Task: "Project health check"
     - What is wrong
     - Why it matters
     - How to fix (if not obvious)
+    - Remedy name (Required for Important+ structural issues only: coupling,
+      responsibility placement, abstraction level, duplication, tangled
+      conditionals - NOT pure bugs/security/perf). Pick from: replace a
+      conditional chain with a typed model or dispatcher; collapse duplicate
+      branches into one flow; separate orchestration from business logic; move
+      feature-specific logic out of a shared module; reuse the existing canonical
+      helper; make a type boundary explicit; delete a pass-through wrapper;
+      extract a helper or split a large file. Naming the remedy keeps the fix
+      surgical instead of leaving the fixer guessing.
 
     ### Recommendations
     [Prioritized improvements for the next interval]

@@ -200,6 +200,23 @@ After all Critical + Important resolved:
 - Violates YAGNI
 - Technically incorrect for this stack
 
+**Disagreement resolution hierarchy** (use when you and the reviewer disagree,
+to decide whether to push back or concede):
+
+1. **Technical facts and data** override opinions and preferences. A test,
+   benchmark, or reproducible failure beats "I think."
+2. **Project style guide / conventions** are the authority on style matters -
+   follow them even if the reviewer proposes a "cleaner" style.
+3. **Software design principles** (coupling, cohesion, abstraction level) are
+   judged on engineering merit, not personal preference.
+4. **Codebase consistency** is acceptable if it does not degrade overall health
+   - matching an existing local pattern is a valid reason to decline an
+   "improvement" that would introduce a second pattern.
+
+Lower numbers beat higher numbers. If the reviewer is right on facts (1) but you
+prefer a different style (2-4), concede. If the reviewer's point is preference
+(4) but you have a factual reason (1), push back with the fact.
+
 ## Output
 
 ```

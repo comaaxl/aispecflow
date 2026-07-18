@@ -54,8 +54,14 @@ Task: "Review a whole OpenSpec change"
     **Architecture:**
     - Sound design decisions?
     - Reasonable scalability and performance?
-    - Security concerns?
     - Integrates cleanly with surrounding code?
+
+    **Security:**
+    - User input validated and sanitized at system boundaries?
+    - SQL queries parameterized (no string concatenation)?
+    - Secrets kept out of code, logs, and version control?
+    - Authentication/authorization checked where the change adds sensitive paths?
+    - External data (APIs, logs, user content, config) treated as untrusted?
 
     **Testing:**
     - Tests verify real behavior, not mocks?
@@ -67,6 +73,15 @@ Task: "Review a whole OpenSpec change"
     - Migration strategy if schema changed?
     - Backward compatibility considered?
     - Documentation complete?
+
+    **Dead code (report, do not auto-delete):**
+    - Code made unreachable or unused by THIS change (orphaned imports,
+      variables, functions, wrappers this change made redundant)?
+    - List each with file:line. Mark Important if this change caused it.
+    - Do NOT flag pre-existing dead code unrelated to this change as an issue.
+      At most mention it in Recommendations, always phrased as a question
+      ("candidate for removal?"), never as a directive. The fix agent must not
+      delete dead code unless an issue explicitly requires it.
 
     ## ⚠️ Cannot-Verify-From-Diff Mechanism
 
@@ -128,6 +143,15 @@ Task: "Review a whole OpenSpec change"
     - What is wrong
     - Why it matters
     - How to fix (if not obvious)
+    - Remedy name (Required for Important+ structural issues only: coupling,
+      responsibility placement, abstraction level, duplication, tangled
+      conditionals - NOT pure bugs/security/perf). Pick from: replace a
+      conditional chain with a typed model or dispatcher; collapse duplicate
+      branches into one flow; separate orchestration from business logic; move
+      feature-specific logic out of a shared module; reuse the existing canonical
+      helper; make a type boundary explicit; delete a pass-through wrapper;
+      extract a helper or split a large file. Naming the remedy keeps the fix
+      surgical instead of leaving the fixer guessing.
 
     ### ⚠️ Cannot Verify From Diff
     [Items whose evidence is in unchanged code or spans tasks. For each: what
