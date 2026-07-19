@@ -85,6 +85,10 @@ Collect:
 - **Requirements**: Completed tasks from `tasks.md` + `specs/` (not needed for
   project-level)
 - **Change name**: The OpenSpec change name, if applicable
+- **Project root**: The repo root path. All three levels now pass this to the
+  reviewer so it can trace internal calls to their definitions, confirm
+  contracts, and compare sibling implementations. Derive it from the apply
+  state file's working dir, the git repo root, or ask the user - never assume.
 
 ### Step 3: Prepare the diff as a file and dispatch the reviewer
 
@@ -115,20 +119,38 @@ path and the `openspec/specs/` path; it reads the whole codebase.
 
 Select the template by level and fill placeholders:
 - **Task-level**: `references/task-reviewer.md` - placeholders `{DIFF_FILE}`,
-  `{TASK_LINE}` (the tasks.md line), `{SPEC_FILES}`.
+  `{TASK_LINE}` (the tasks.md line), `{SPEC_FILES}`, `{PROJECT_ROOT}`.
 - **Change-level**: `references/change-reviewer.md` - placeholders
-  `{DIFF_FILE}`, `{PROPOSAL}`, `{SPECS_DIR}`, `{TASKS_FILE}`.
+  `{DIFF_FILE}`, `{PROPOSAL}`, `{SPECS_DIR}`, `{TASKS_FILE}`, `{PROJECT_ROOT}`.
 - **Project-level**: `references/project-reviewer.md` - placeholders
   `{PROJECT_ROOT}`, `{SPECS_DIR}`.
 
 The reviewer checks (level-dependent - see each template):
 1. **Plan/spec alignment**: Implementation matches requirements? Deviations justified?
 2. **Code quality**: Separation of concerns, error handling, type safety, DRY
-3. **Architecture**: Sound design, scalability, security, integration
-4. **Testing**: Tests verify behavior (not mocks), edge cases covered, all passing
-5. **Production readiness**: Migration strategy, backward compatibility, docs
-6. **Cannot-verify-from-diff** (change-level): items whose evidence lives in
-   unchanged code or spans tasks - flagged with ⚠️ for you to resolve
+3. **Correctness - cross-function contract**: internal calls traced to their
+   definitions; argument contracts (params/order/types/optional args) confirmed,
+   not assumed. Catches bugs like a `%s`-placeholder SQL fed to an executor with
+   no `params` argument.
+4. **Correctness - failure paths & side-effect consistency**: side-effect timing
+   (audit/log/state written only on success), resource leaks on exceptions,
+   partial-success rollback, error swallowing, retry idempotency.
+5. **Architecture**: Sound design, scalability, integration (Security has its
+   own axis below)
+6. **Security**: Input validation, SQL parameterization, secrets, auth, untrusted
+   external data
+7. **Testing**: Tests verify behavior (not mocks), edge cases covered, all passing
+8. **Production readiness**: Migration strategy, backward compatibility, docs
+9. **Consistency**: same-kind operations follow one pattern (task: vs existing
+   siblings; change: across tasks; project: across the codebase)
+10. **Cannot-verify-from-diff** (change-level only): items whose evidence lives
+    in unchanged code or spans tasks - flagged with ⚠️ for you to resolve
+
+**All three levels share the correctness kernel** (items 3-4) and may read any
+source file under the project root to verify internal contracts. The difference
+between levels is scope, not methodology strength: task-level reviews one task's
+diff against its spec; change-level reviews the whole change and cross-task fit;
+project-level is a full-codebase health check with no diff.
 
 ### Step 4: Evaluate the review
 

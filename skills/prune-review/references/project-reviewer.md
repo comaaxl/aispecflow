@@ -19,6 +19,11 @@ Task: "Project health check"
 
     You are read-only: do NOT modify any files. Report findings only.
 
+    You already read the whole codebase for this health check. When assessing
+    correctness below, actively trace internal calls to their definitions across
+    the codebase - cross-function contract drift and failure-path gaps are
+    common long-term defects that a surface read misses.
+
     ## Project Root
 
     {PROJECT_ROOT}
@@ -37,6 +42,29 @@ Task: "Project health check"
     - Is the overall structure sound? Clear layering/separation?
     - Are responsibilities placed correctly?
     - Any architectural erosion or drift from sound patterns?
+
+    **Correctness - cross-function contract drift:**
+    - Sample internal calls across the codebase: do callers pass arguments
+      matching the callee's actual signature (names, order, types, optional
+      params like `params`/`timeout`/`scope`)? A SQL string with `%s`
+      placeholders fed to a `fetch_all`-style executor that takes no `params`
+      argument is a contract bug that surfaces as a runtime syntax error.
+    - Flag contract mismatches as Critical or Important - these are latent
+      runtime bugs, not style.
+
+    **Correctness - failure paths and side-effect consistency:**
+    - Across the codebase, sample functions with side effects and check:
+      1. Side-effect timing: audit/log/state/cache/notifications written only
+         after the main operation succeeds? Failed ops leaving a "success"
+         record or no record?
+      2. Resource leaks: connections, file handles, locks, temp files released
+         on exception paths?
+      3. Partial success / intermediate state: multi-step ops failing midway
+         without rollback?
+      4. Error swallowing: `except: pass`, bare `except`, log-only-no-raise?
+      5. Retry/idempotency: retried paths causing duplicate side effects?
+    - These are common long-term defects; note systemic patterns, not just
+      isolated instances.
 
     **Technical debt:**
     - Accumulated workarounds, TODO/FIXME density?
@@ -80,8 +108,12 @@ Task: "Project health check"
     - Stale docs claiming things the code no longer does?
     - Missing docs for non-obvious modules?
 
-    **Long-term drift:**
+    **Long-term drift & same-kind consistency:**
     - Inconsistencies that grew over time (naming, patterns, conventions)?
+    - Same-kind operations (e.g. all MCP tools, all API handlers, all CLI
+      subcommands) following different error-handling, audit/logging, auth, or
+      return-shape patterns? Divergence here is tech debt that compounds - flag
+      the pattern, not just one instance.
     - Areas that look like they evolved without a coherent direction?
 
     ## Calibration

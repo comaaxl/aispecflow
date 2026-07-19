@@ -18,6 +18,11 @@ Task: "Review a single task's changes"
 
     You are read-only: do NOT modify any files. Report findings only.
 
+    You MAY read any source file under the project root to follow a call to its
+    definition, confirm a contract, or compare against an existing pattern.
+    Reading is required when a diff calls an internal function whose signature
+    or behavior is not fully shown in the diff - do not assume it.
+
     ## What Was Implemented
 
     {TASK_LINE}
@@ -49,6 +54,31 @@ Task: "Review a single task's changes"
     - DRY without premature abstraction?
     - Edge cases handled?
 
+    **Correctness - cross-function contract:**
+    - For every call THIS task makes to an internal project function/method
+      (not a stdlib or third-party call), trace the call to its definition and
+      confirm the argument contract: parameter names, order, types, and whether
+      optional params (e.g. `params` for SQL, `timeout`, `scope`) are passed when
+      the callee expects them. A SQL string containing `%s` placeholders passed
+      to a `fetch_all`-style executor that takes no `params` argument is a
+      contract bug, not a style issue. Do NOT assume the callee handles it -
+      read the callee. If you cannot read the callee, state that explicitly
+      rather than guessing.
+
+    **Correctness - failure paths and side-effect consistency:**
+    - For any function this task adds or changes, walk each failure path:
+      1. Side-effect timing: are audit/log/state/cache/notifications written
+         only AFTER the main operation succeeds? Does a failed main operation
+         leave a "success" record or no record at all?
+      2. Resource leaks: on exception, are connections, file handles, locks,
+         and temp files released (context managers / finally)?
+      3. Partial success / intermediate state: if a multi-step operation fails
+         midway, are earlier steps rolled back or left in an inconsistent state?
+      4. Error swallowing: is there `except: pass`, bare `except`, or log-only-
+         no-raise that hides a real failure?
+      5. Retry/idempotency: if this path can be retried, does it cause duplicate
+         side effects (duplicate messages, charges, writes)?
+
     **Security:**
     - User input validated at the boundary this task touches?
     - SQL parameterized (no string concatenation) if this task touches the DB?
@@ -60,6 +90,19 @@ Task: "Review a single task's changes"
     - Edge cases covered?
     - All tests passing? (trust the implementer's report unless the diff
       contradicts it)
+
+    **Consistency with existing patterns:**
+    - If this task implements an operation that has siblings already in the
+      codebase (e.g. another MCP tool, another API handler, another CLI
+      subcommand doing the same kind of work), compare: error handling, audit/
+      logging shape, auth checks, input validation, and return shape. Flag
+      divergence as Important - same-kind operations should follow one pattern
+      unless there is a stated reason.
+
+    **Production readiness:**
+    - Migration strategy if this task changes a schema or data format?
+    - Backward compatibility: does it break existing callers?
+    - Documentation/inline comments complete for non-obvious behavior?
 
     **Dead code (report, do not auto-delete):**
     - Code made unreachable or unused by THIS task (orphaned imports,
@@ -147,3 +190,4 @@ Task: "Review a single task's changes"
 - `{TASK_LINE}` - the single `- [x] X.Y ...` line from tasks.md for this task
 - `{DIFF_FILE}` - path to the file containing `git log --oneline`, `git diff --stat`, and `git diff -U10` for `head..HEAD`
 - `{SPEC_FILES}` - paths to the spec files relevant to this task
+- `{PROJECT_ROOT}` - path to the project root, for reading internal callees and existing sibling patterns

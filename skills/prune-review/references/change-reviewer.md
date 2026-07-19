@@ -18,6 +18,12 @@ Task: "Review a whole OpenSpec change"
 
     You are read-only: do NOT modify any files. Report findings only.
 
+    You MAY read any source file under the project root to follow a call to its
+    definition, confirm a contract, or compare sibling implementations. Reading
+    is required when the diff calls an internal function whose signature or
+    behavior is not fully shown in the diff - do not assume it. This is also how
+    you gather evidence for cross-task consistency checks.
+
     ## What Was Implemented
 
     {PROPOSAL}
@@ -43,6 +49,12 @@ Task: "Review a whole OpenSpec change"
     **Cross-task consistency:**
     - Do tasks fit together? Do later tasks correctly use earlier tasks' work?
     - Are interfaces between tasks consistent?
+    - Same-kind operations across tasks (e.g. multiple MCP tools, multiple API
+      handlers, multiple CLI subcommands doing similar work): compare their
+      error handling, audit/logging shape, auth checks, input validation, and
+      return shape. Divergence is an Important issue - they should follow one
+      pattern unless a task states a reason. This is the most common form of
+      drift inside a single change.
 
     **Code quality:**
     - Clean separation of concerns?
@@ -50,6 +62,30 @@ Task: "Review a whole OpenSpec change"
     - Type safety where applicable?
     - DRY without premature abstraction?
     - Edge cases handled?
+
+    **Correctness - cross-function contract:**
+    - For every call the change makes to an internal project function/method
+      (not stdlib or third-party), trace it to its definition and confirm the
+      argument contract: parameter names, order, types, and whether optional
+      params (e.g. `params` for SQL, `timeout`, `scope`) are passed when the
+      callee expects them. A SQL string with `%s` placeholders passed to a
+      `fetch_all`-style executor that takes no `params` argument is a contract
+      bug. Do NOT assume the callee handles it - read the callee. If you cannot
+      read it, mark the item ⚠️ rather than guessing.
+
+    **Correctness - failure paths and side-effect consistency:**
+    - For any function the change adds or changes, walk each failure path:
+      1. Side-effect timing: are audit/log/state/cache/notifications written
+         only AFTER the main operation succeeds? Does a failed main operation
+         leave a "success" record or no record at all?
+      2. Resource leaks: on exception, are connections, file handles, locks,
+         temp files released (context managers / finally)?
+      3. Partial success / intermediate state: if a multi-step operation fails
+         midway, are earlier steps rolled back or left inconsistent?
+      4. Error swallowing: `except: pass`, bare `except`, or log-only-no-raise
+         that hides a real failure?
+      5. Retry/idempotency: if this path can be retried, does it cause duplicate
+         side effects?
 
     **Architecture:**
     - Sound design decisions?
@@ -195,3 +231,4 @@ Task: "Review a whole OpenSpec change"
 - `{DIFF_FILE}` - path to the file containing `git log --oneline`, `git diff --stat`, and `git diff -U10` for `base..HEAD`
 - `{SPECS_DIR}` - path to the change's `specs/` directory
 - `{TASKS_FILE}` - path to `tasks.md`
+- `{PROJECT_ROOT}` - path to the project root, for reading internal callees and sibling implementations across tasks

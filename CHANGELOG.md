@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.5] - 2026-07-19
+
+### Changed
+- `prune-review`: all three reviewer levels now share a **correctness kernel** - the difference between levels is scope, not methodology strength
+- `prune-review`: added **cross-function contract** check to all three levels - internal calls are traced to their definitions and argument contracts (params/order/types/optional args) confirmed, not assumed. Catches bugs like a `%s`-placeholder SQL fed to an executor with no `params` argument
+- `prune-review`: added **failure paths & side-effect consistency** check to all three levels, covering five categories: side-effect timing (audit/log/state written only on success), resource leaks on exceptions, partial-success rollback, error swallowing, and retry idempotency
+- `prune-review`: task-level now matches change-level on single-task dimensions - added Production readiness axis and Consistency-with-existing-patterns axis (task-level still does NOT check cross-task or cannot-verify, by design)
+- `prune-review`: change-level cross-task consistency now explicitly requires comparing same-kind operations across tasks (error handling, audit shape, auth, validation, return shape)
+- `prune-review`: project-level Long-term drift renamed to Long-term drift & same-kind consistency, with explicit same-kind divergence flagging
+- `prune-review`: all three reviewer levels may now read any source file under the project root to verify internal contracts and compare siblings; `{PROJECT_ROOT}` placeholder added to all templates and SKILL.md
+
 ## [1.1.4] - 2026-07-18
 
 ### Changed
