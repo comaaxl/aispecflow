@@ -401,15 +401,18 @@ Mock at **system boundaries only**:
 All tasks complete.
 ```
 
-### Step 5: Project checks (optional, user-driven)
+### Step 5: Project checks (ask first, never auto-run)
 
 After all tasks are complete, **probe the project's configured checks** by
 looking for the project's own configuration files and mapping them to check
 categories. See `references/project-checks-probe.md` for the signal table (a
 starting point, NOT exhaustive - extend it to match what you actually find).
 
-**Offer to run these checks.** Only run what the project actually configures,
-and only if the user agrees.
+**MUST ask the user before running anything.** Present what you probed and the
+run options, then STOP and wait for the user's answer. Do NOT run any check
+until the user explicitly picks an option. The user needs this prompt to
+provide prerequisites (env vars, DB connections, etc.) that some checks need -
+running without asking robs them of that chance.
 
 **Probe prerequisites for checks that need them.** Some checks only run when an
 external resource is available - e.g. integration tests that skip unless an env
@@ -440,12 +443,17 @@ reference wording):
 > - 集成测试: {工具} (需设 {ENV_VAR}，当前未设 -> 将被跳过)
 > - ...
 >
+> 注意：部分校验有前置条件未满足（如上标注）。如需运行这些校验，请先提供所需环境变量或配置，再选择。
+>
 > 请选择：
-> 1. 全部跑（推荐）- 跑上述所有校验（注：未满足前置条件的会被跳过）
+> 1. 全部跑（推荐）- 跑上述所有校验（注：未满足前置条件的会被跳过；如需运行请先配置）
 > 2. 自选 - 你指定跑哪些（从上述列表里选子集）
 > 3. 跳过 - 不跑任何校验，直接进入下一步"
+>
+> STOP. Wait for the user's choice. Do not proceed until they answer.
 
 **No config found -> skip this whole step silently.**
+**Config found but user has not answered yet -> STOP. Do not run anything.**
 
 **Run according to the user's choice**, then report results. **Do not report
 "all passed" based on exit code alone** - check whether checks with

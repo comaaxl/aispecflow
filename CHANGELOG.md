@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.10] - 2026-07-22
+
+### Changed
+- `grow-apply` Step 5: renamed from "optional, user-driven" to "ask first, never auto-run". Hardened the discipline so the agent MUST ask the user before running any check and STOP to wait for the answer. Previously the soft "offer to run" wording let the agent sometimes run checks without asking, robbing the user of the chance to provide prerequisites (env vars, DB connections) that integration tests need.
+- `grow-apply` Step 5: the ask prompt now explicitly tells the user that some checks have unmet prerequisites and to provide env vars / config before choosing to run them. Added two hard rules: "no config found -> skip silently" and "config found but user has not answered -> STOP, do not run anything".
+- `renew-docs` Step 7: restored to full version with file list and example wording (was simplified in 1.1.9 to work around a commit-tooling issue).
+
 ## [1.1.9] - 2026-07-22
 
 ### Added
