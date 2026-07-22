@@ -411,29 +411,58 @@ starting point, NOT exhaustive - extend it to match what you actually find).
 **Offer to run these checks.** Only run what the project actually configures,
 and only if the user agrees.
 
+**Probe prerequisites for checks that need them.** Some checks only run when an
+external resource is available - e.g. integration tests that skip unless an env
+var is set, or a feature flag is on. Scan the project's **test config files**
+(not only `conftest.py` - also `pytest.ini`, `pyproject.toml [tool.pytest]`,
+`jest.config.*`, `package.json`, `Cargo.toml`, `go.mod`-adjacent test files,
+etc.) for prerequisite patterns:
+- `os.environ.get("XXX")` / `os.Getenv("XXX")` followed by `skip` (Python/Go)
+- `process.env.XXX` followed by `describe.skip`/`it.skip` (JS/TS)
+- feature gates / build tags that gate integration tests (Rust `#[cfg(feature=...)]`, Go `//go:build`)
+- marker descriptions mentioning env vars / prerequisites (e.g. pyproject
+  `markers = ["integration: 需设 XXX 环境变量"]`)
+
+For each prerequisite found, **check whether it is currently satisfied** (is the
+env var set? is the feature on?). This is a starting point, NOT exhaustive -
+extend the patterns to match what you actually find.
+
 **If checks were probed, ask the user** (replace placeholders with probed
-results; show only the rows that matched; ask in the user's language - the
-Chinese below is reference wording):
+results; show only the rows that matched; for checks with unmet prerequisites,
+mark them explicitly; ask in the user's language - the Chinese below is
+reference wording):
 
 > "所有 task 已完成。是否按项目配置做校验？
 >
 > 检测到项目已配置以下校验：
-> - {类别1}: {工具} ({配置位置 / 前置条件})
-> - {类别2}: {工具} ({配置位置 / 前置条件})
+> - {类别1}: {工具} ({配置位置})
+> - {类别2}: {工具} ({配置位置})
+> - 集成测试: {工具} (需设 {ENV_VAR}，当前未设 -> 将被跳过)
 > - ...
 >
 > 请选择：
-> 1. 全部跑（推荐）- 跑上述所有校验
+> 1. 全部跑（推荐）- 跑上述所有校验（注：未满足前置条件的会被跳过）
 > 2. 自选 - 你指定跑哪些（从上述列表里选子集）
 > 3. 跳过 - 不跑任何校验，直接进入下一步"
 
 **No config found -> skip this whole step silently.**
 
-**Run according to the user's choice**, then report results:
+**Run according to the user's choice**, then report results. **Do not report
+"all passed" based on exit code alone** - check whether checks with
+prerequisites were actually run or silently skipped:
 
-- **All passed:**
+- **All passed and nothing was skipped:**
   > "所有校验通过。
   > 下一步建议：运行 /prune-review 做 change 级代码审查。"
+- **Exit code 0 but some checks were skipped (prerequisites unmet):**
+  > "⚠️ 校验退出码为 0，但以下校验被跳过（前置条件未满足）：
+  > - {校验项}: 需设 {ENV_VAR}，当前未设，已被跳过
+  >
+  > 虽然退出码为 0，但这些校验未实际执行。请设置前置条件后重跑，或明确接受"未覆盖"。
+  > 下一步建议：运行 /prune-review 做 change 级代码审查。"
+  Do NOT collapse this into "all passed" - a skipped integration test is not a
+  passing integration test. This is the most dangerous false-green: the user
+  thinks integration is verified when it was never run.
 - **Some failed:**
   > "以下校验未通过：
   > - {校验项}: {失败摘要}

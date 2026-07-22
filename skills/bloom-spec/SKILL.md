@@ -105,6 +105,32 @@ openspec status --change "<name>"
 
 **Output**: change name, artifacts created. Prompt the user: "Specs are ready. Run `/grow-apply` when you want to implement."
 
+### Step 5: Commit artifacts (if git)
+
+After showing the final status, if the project has git, commit the artifacts
+this skill produced so the working tree is clean for `/grow-apply` (which checks
+for a clean tree at startup). **Only commit files this skill created** - do not
+`git add -A` or sweep up unrelated dirty files.
+
+Files this skill produced (under `openspec/changes/<change>/`):
+- `proposal.md`
+- `design.md`
+- `tasks.md`
+- `specs/` (spec files)
+
+List the exact files to the user and confirm before committing:
+
+> "I'll commit these spec-phase artifacts:
+> - openspec/changes/<change>/proposal.md
+> - openspec/changes/<change>/design.md
+> - openspec/changes/<change>/tasks.md
+> - openspec/changes/<change>/specs/*.md
+>
+> Commit as `spec(bloom-spec): <change>`. OK?"
+
+If the user confirms, commit (append-only, never amend). If no git, or the user
+declines, skip silently. Do not block the handoff to `/grow-apply` on this.
+
 ## Guardrails
 
 - **Ask for change name if not provided.** Never derive it.

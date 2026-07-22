@@ -178,7 +178,31 @@ Present this document to the user. Say: "This is my understanding of what we're 
 
 Once the user confirms requirements.md, **STOP completely.** Do NOT start coding, designing, or implementing anything. Your ONLY next action is to prompt:
 
-> "Requirements confirmed. Run `/bloom-spec` when you're ready to generate the formal specs." 
+> "Requirements confirmed. Run `/bloom-spec` when you're ready to generate the formal specs."
+
+### Commit artifacts (if git)
+
+After the user confirms `requirements.md`, if the project has git, commit the
+artifacts this skill produced so the working tree is clean for the next phase.
+**Only commit files this skill created or updated** - do not `git add -A` or
+sweep up unrelated dirty files.
+
+Files this skill may have produced:
+- `docs/requirements.md`
+- `CONTEXT.md`
+- `docs/adr/NNNN-*.md` (any ADRs created during grilling)
+
+List the exact files to the user and confirm before committing:
+
+> "I'll commit these requirements-phase artifacts:
+> - docs/requirements.md
+> - CONTEXT.md
+> - docs/adr/0003-auth-strategy.md
+>
+> Commit as `docs(seed-grill): <topic>`. OK?"
+
+If the user confirms, commit (append-only, never amend). If no git, or the user
+declines, skip silently. Do not block the handoff to `/bloom-spec` on this.
 
 ## Guardrails
 

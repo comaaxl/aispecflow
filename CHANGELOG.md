@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.8] - 2026-07-22
+
+### Added
+- `seed-grill`: new "Commit artifacts (if git)" step at the end. After the user confirms requirements.md, commits the files this skill produced (docs/requirements.md, CONTEXT.md, docs/adr/*) so the working tree is clean for /bloom-spec. Only commits this skill's own files (no `git add -A`), confirms scope with the user first, append-only. Skips silently if no git or user declines.
+- `bloom-spec`: new "Step 5: Commit artifacts (if git)". Commits proposal.md / design.md / tasks.md / specs/ so /grow-apply starts on a clean tree. Same discipline: only this skill's files, user confirms scope, append-only, skips silently.
+- `grow-apply`: Step 5 now probes **prerequisites** for checks that need them (integration tests that skip unless an env var is set, feature-gated tests, etc.). Scans test config files (NOT only conftest.py - also pytest.ini, pyproject.toml, jest.config, Cargo.toml, Go test files, marker descriptions) for prerequisite patterns, checks whether each is currently met, and marks unmet ones explicitly in the offer ("需设 {ENV_VAR}，当前未设 -> 将被跳过").
+- `grow-apply/references/project-checks-probe.md`: new "Prerequisites (env vars / feature gates)" section with a pattern table (Python/JS/Go/Rust) and false-green reporting rules.
+
+### Changed
+- `grow-apply`: Step 5 result reporting no longer treats "exit code 0" as "all passed" when checks were skipped due to unmet prerequisites. A skipped integration test is reported as a false-green warning, not a pass - the most dangerous outcome is the user thinking integration is verified when it was never run.
+
 ## [1.1.7] - 2026-07-22
 
 ### Changed
