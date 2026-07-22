@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.9] - 2026-07-22
+
+### Added
+- `harvest-archive`: new "Step 9: Commit archive changes (if git)". After archiving, commits the files this skill moved or synced (archived change dir, synced delta specs, archived requirements) so the working tree is clean for /renew-docs. Only commits this skill's own files (no `git add -A`), confirms scope with the user first, append-only. Skips silently if no git or user declines.
+- `renew-docs`: new "Step 7: Commit doc changes (if git)". After applying approved doc updates, commits the documents this skill modified. Same discipline: only this skill's files, user confirms scope, append-only, skips silently.
+
+### Changed
+- Completes the commit-artifacts pattern across the lifecycle: seed-grill and bloom-spec (added 1.1.8) now joined by harvest-archive and renew-docs, so every phase that produces artifacts leaves a clean working tree for the next phase. grow-apply already commits per-task via checkpoint commits; prune-review commits fixes; no changes needed there.
+
 ## [1.1.8] - 2026-07-22
 
 ### Added
