@@ -10,7 +10,8 @@ Update project-level documentation to reflect the current state of the codebase.
 ## When to Use
 
 - After running `/harvest-archive`
-- When you notice README.md or `docs/project-overview.md` are outdated
+- When you notice project docs are outdated (README, architecture docs, rule
+  files, ADRs, deploy docs, changelog, etc.)
 - After major changes or long periods without doc updates
 - User says "update the docs" or "refresh documentation"
 
@@ -47,21 +48,89 @@ Re-scan the codebase similar to `/terrain-scan`:
 - Configuration and environment variables
 - Key files
 
+### Step 2.5: Probe the project's documentation inventory
+
+Before diffing, discover what documentation this project actually has. Do not
+assume a fixed set - probe and list whatever exists.
+
+**Probe signals** (a starting point, NOT exhaustive - extend to match what you
+find):
+
+| Probe target | If found, include |
+|---|---|
+| Root `README.md` / `README-zh.md` / `README.*.md` | README (always include if present) |
+| `CLAUDE.md` / `AGENTS.md` (and symlinks - check they stay in sync) | Rule files |
+| `docs/` directory, all `.md` under it | Project docs |
+| `adr/` / `docs/adr/` / `architecture-decisions/` | Architecture Decision Records |
+| `CHANGELOG.md` / `HISTORY.md` / `CHANGES.md` | Changelog |
+| `DEPLOY.md` / `docs/deploy*` / `docs/ops*` / `RUNBOOK*` | Deploy/ops docs |
+| `docs/api*` / `openapi.*` / `docs/openapi*` | API docs |
+| `docs/migration*` / schema docs / `db/migrations/README*` | Schema/migration docs |
+| Project-specific docs (any `.md` the project treats as authoritative) | Include |
+
+Rules:
+- **Dynamic list, not a fixed set.** A project may have 1 doc or 10. List what
+  exists, nothing more.
+- **No docs found -> stop and tell the user** "No project documentation detected.
+  Nothing to refresh." Do not invent documents to update.
+- **Never hardcode a required set.** A project without `docs/project-overview.md`
+  is fine; a project with only ADRs is fine.
+
+**Knowledge placement guide** (decide where an update belongs, to avoid putting
+rule-file content in README or history in docs):
+
+| Knowledge type | Belongs in |
+|---|---|
+| Boundaries/commands/workflows an Agent will get wrong if not seen | `CLAUDE.md` / `AGENTS.md` (rule files) |
+| How to use/operate/maintain the system | `README.md` / `docs/` |
+| Historical process, single incidents, version narrative | `CHANGELOG.md` / git / incident docs |
+| Architecture decisions and their rationale | ADR |
+| Stable mechanisms or lessons that recurred and must be known by successors | Graduate to docs or rule files (not a second copy in memory) |
+
+When a change touches knowledge that spans categories, update each owning
+document for its slice - do not duplicate the same content across documents.
+
 ### Step 3: Diff & identify gaps
 
-Compare what exists against each target document:
+Compare what exists against each probed document, checking by its **document
+type** (not a fixed checklist):
 
-**`README.md`:**
+**README-type** (README.md / README-zh.md):
 - Features list current?
 - Setup/install steps still correct?
 - Usage and API examples up to date?
 - Environment variables documented?
 
-**`docs/project-overview.md`:**
+**Architecture-type** (project-overview / ADR):
 - Architecture section reflects current modules?
 - Directory map includes all directories?
 - Tech stack accurate?
 - Key files index complete?
+- For ADR: does a recent decision need a new ADR, or does an existing ADR now
+  contradict the code?
+
+**Rule-file-type** (CLAUDE.md / AGENTS.md):
+- Commands, build/run steps, and workflows still match the code?
+- Boundaries and conventions still accurate?
+- Dead references to removed files/modules?
+
+**Changelog-type** (CHANGELOG / HISTORY):
+- Does this change warrant a changelog entry? Is it there?
+- Are past entries accurate (not the focus - only flag gross contradictions)?
+
+**Deploy/ops-type** (DEPLOY / RUNBOOK / ops docs):
+- Deploy steps, env vars, ports still match code/config?
+- Rollback/runbook steps still valid?
+
+**API-type** (api docs / openapi):
+- Endpoints, request/response shapes, auth still match code?
+
+**Schema/migration-type**:
+- Schema docs match current migrations?
+- Migration order and notes accurate?
+
+For any other document type found in the probe, judge by its purpose: does it
+still match the current code? Apply the same "verify against reality" standard.
 
 ### Step 4: Propose changes — get consent
 
@@ -85,6 +154,11 @@ Compare what exists against each target document:
 > **docs/project-overview.md**:
 > - Architecture section misses 2 new modules
 > - Tech stack has 4 outdated entries
+> **adr/0007-cache-strategy.md**:
+> - New ADR needed: caching layer added but no decision recorded
+>
+> (List only the documents actually probed in Step 2.5. The above is a sample
+> shape - your actual list depends on what the project has.)
 >
 > May I apply these changes? (Documents will be backed up before editing.)"
 
@@ -107,14 +181,18 @@ Apply the approved changes. Keep edits minimal — only what's needed to sync wi
 
 **Mode:** Change-based (from `<name>`) / Full refresh
 **Documents updated:**
-- README.md — added feature X, updated setup instructions
-- docs/project-overview.md — updated directory map, tech stack
+- README.md - added feature X, updated setup instructions
+- docs/project-overview.md - updated directory map, tech stack
+- CLAUDE.md - updated run command
+- CHANGELOG.md - added entry for this change
 
 **Backups:**
 - docs/.archive/README.md.20260705-143000.bak
 - docs/.archive/project-overview.md.20260705-143001.bak
+- docs/.archive/CLAUDE.md.20260705-143002.bak
+- docs/.archive/CHANGELOG.md.20260705-143003.bak
 
-All documentation now reflects the current codebase.
+All probed documentation now reflects the current codebase.
 ```
 
 ## Guardrails

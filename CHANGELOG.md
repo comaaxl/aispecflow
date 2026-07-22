@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.7] - 2026-07-22
+
+### Changed
+- `renew-docs`: removed hardcoded `README.md` + `docs/project-overview.md` assumption. Now dynamically probes the project's documentation inventory (README, rule files like CLAUDE.md/AGENTS.md, docs/, ADRs, changelog, deploy/ops docs, API docs, schema/migration docs, project-specific docs) and refreshes whatever actually exists. No docs found -> stops and tells the user instead of inventing documents.
+- `renew-docs`: Step 3 now checks each document by its **type** (README-type / architecture-type / rule-file-type / changelog-type / deploy-ops-type / API-type / schema-migration-type) instead of a fixed two-document checklist. Each type has its own verification questions.
+- `renew-docs`: added a **knowledge placement guide** (drawn from neat-freak best practices) deciding where an update belongs - rule files vs README/docs vs changelog vs ADR - to avoid duplicating content across documents or putting it in the wrong place.
+- `renew-docs`: Step 4/6 examples generalized to show multiple document types, with a note that the actual list depends on what was probed.
+
+### Added
+- `renew-docs`: new Step 2.5 (probe documentation inventory) with a probe-signal table that is explicitly a starting point, not exhaustive.
+
 ## [1.1.6] - 2026-07-22
 
 ### Added
