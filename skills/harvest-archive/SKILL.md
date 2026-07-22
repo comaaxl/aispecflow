@@ -97,6 +97,29 @@ The CLI moves the change to `openspec/changes/archive/YYYY-MM-DD-<name>/`.
 Prompt the user: "Change archived. Run `/renew-docs` to update project documentation."
 ```
 
+### Step 9: Commit archive changes (if git)
+
+After archiving, if the project has git, commit the files this step moved or
+synced so the working tree is clean. **Only commit files this skill touched** -
+do not `git add -A` or sweep up unrelated dirty files.
+
+Files this skill may have changed:
+- `openspec/changes/archive/YYYY-MM-DD-<name>/` (the moved change directory)
+- `openspec/changes/<name>/` (removed after move)
+- `openspec/specs/` (synced delta specs)
+- `docs/requirements.md` or its archived copy (if requirements were archived)
+
+List the exact paths to the user and confirm before committing:
+
+> "I'll commit these archive changes:
+> - openspec/changes/archive/2026-07-22-<name>/ (moved change)
+> - openspec/specs/ (synced delta specs)
+>
+> Commit as `chore(harvest-archive): archive <name>`. OK?"
+
+If the user confirms, commit (append-only, never amend). If no git, or the user
+declines, skip silently. Do not block the handoff to `/renew-docs` on this.
+
 ## Guardrails
 
 - **Always let the user select the change.** Never auto-select.
