@@ -198,12 +198,24 @@ All probed documentation now reflects the current codebase.
 ### Step 7: Commit doc changes (if git)
 
 After applying the approved doc updates, if the project has git, commit the
-documents this skill modified. Only commit files this skill edited. Do not
-git add -A or sweep up unrelated dirty files.
+documents this skill modified. **Only commit files this skill edited** - do not
+`git add -A` or sweep up unrelated dirty files.
 
-List the exact paths to the user and confirm before committing. If the user
-confirms, commit append-only never amend. If no git or the user declines,
-skip silently.
+Files this skill may have modified (the ones the user approved in Step 4):
+- Any probed documents that were updated (README.md, CLAUDE.md, AGENTS.md,
+  docs/project-overview.md, ADRs, CHANGELOG.md, etc.)
+
+List the exact paths to the user and confirm before committing:
+
+> "I'll commit these doc updates:
+> - README.md - added feature X, updated setup
+> - CLAUDE.md - updated run command
+> - CHANGELOG.md - added entry
+>
+> Commit as `docs renew-docs sync with codebase`. OK?"
+
+If the user confirms, commit (append-only, never amend). If no git, or the user
+declines, skip silently.
 
 
 ## Guardrails
