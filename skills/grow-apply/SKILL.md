@@ -401,6 +401,51 @@ Mock at **system boundaries only**:
 All tasks complete.
 ```
 
+### Step 5: Project checks (optional, user-driven)
+
+After all tasks are complete, **probe the project's configured checks** by
+looking for the project's own configuration files and mapping them to check
+categories. See `references/project-checks-probe.md` for the signal table (a
+starting point, NOT exhaustive - extend it to match what you actually find).
+
+**Offer to run these checks.** Only run what the project actually configures,
+and only if the user agrees.
+
+**If checks were probed, ask the user** (replace placeholders with probed
+results; show only the rows that matched; ask in the user's language - the
+Chinese below is reference wording):
+
+> "所有 task 已完成。是否按项目配置做校验？
+>
+> 检测到项目已配置以下校验：
+> - {类别1}: {工具} ({配置位置 / 前置条件})
+> - {类别2}: {工具} ({配置位置 / 前置条件})
+> - ...
+>
+> 请选择：
+> 1. 全部跑（推荐）- 跑上述所有校验
+> 2. 自选 - 你指定跑哪些（从上述列表里选子集）
+> 3. 跳过 - 不跑任何校验，直接进入下一步"
+
+**No config found -> skip this whole step silently.**
+
+**Run according to the user's choice**, then report results:
+
+- **All passed:**
+  > "所有校验通过。
+  > 下一步建议：运行 /prune-review 做 change 级代码审查。"
+- **Some failed:**
+  > "以下校验未通过：
+  > - {校验项}: {失败摘要}
+  > - ...
+  >
+  > 建议先修复失败项再进入 review。是否现在修复，还是先跳过校验进 review？"
+  If the user chooses to fix, fix and re-run only the failed checks. If the user
+  chooses to skip, proceed to the suggestion below.
+- **User chose skip:**
+  > "已跳过校验。
+  > 下一步建议：运行 /prune-review 做 change 级代码审查。"
+
 Then, based on `per_task_review` in the state file:
 
 - **`final` (the default)** - prompt: "Run `/prune-review` now for the

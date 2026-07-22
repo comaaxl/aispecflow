@@ -29,7 +29,7 @@ Superpowers 最接近完整工作流，但它很重——自带规划系统、wo
 | 0 | `terrain-scan` | 探察 | 扫描代码库 -> `docs/project-overview.md` |
 | 1 | `seed-grill` | Grill | Relentless 需求访谈 -> `docs/requirements.md`、`CONTEXT.md`、ADR |
 | 2 | `bloom-spec` | Spec | OpenSpec propose -> proposal、specs、design、tasks |
-| 3 | `grow-apply` | 实施 | 用 TDD 或直接方式实施任务（用户选择）+ git checkpoint 提交 + 可选任务级审查 |
+| 3 | `grow-apply` | 实施 | 用 TDD 或直接方式实施任务（用户选择）+ git checkpoint 提交 + 可选任务级审查 + 可选的 review 前项目校验（lint/类型检查/集成测试，按项目配置驱动） |
 | 4 | `prune-review` | 审查 | 三级审查：task / change / project，由独立子代理执行 |
 | 5 | `harvest-archive` | 归档 | 同步 specs、归档变更、可选归档需求文档 |
 | 6 | `renew-docs` | 刷新 | 保持 README + project-overview 最新（基于变更或全量刷新） |

@@ -61,7 +61,7 @@ Orchestrate the complete development lifecycle through 7 phases:
 
 **What happens**: Run `/grow-apply` to implement all tasks using TDD (RED -> GREEN -> REFACTOR per task), with a git state check, checkpoint commits per task, and optional task-level review.
 
-**Completion criterion**: All tasks checked, all tests green, no skipped tests, apply state file recorded (base + head).
+**Completion criterion**: All tasks checked, all tests green, no skipped tests, apply state file recorded (base + head). If the user opted into the optional project checks (lint/type/integration, config-driven), those pass or the user explicitly proceeded.
 
 **Prerequisites**: `tasks.md` exists with checkbox tasks.
 

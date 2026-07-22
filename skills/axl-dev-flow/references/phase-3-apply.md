@@ -31,6 +31,16 @@ Run `/grow-apply`
    optional **subagent review** (only if `per_task_review: every`) -> mark
    `[x]` (advances `last_completed_task`). Fixes commit as
    `fix(review-task-X): ...`. Re-review is the user's call, not automatic.
+7. **After all tasks complete - project checks (optional, user-driven)**:
+   probe the project's configured static checks and integration tests (lint,
+   type check, integration tests, etc. - see
+   `skills/grow-apply/references/project-checks-probe.md` for the signal table,
+   which is a starting point, not exhaustive). If checks are configured, offer
+   to run them (all / user-selected subset / skip). Run only against changed
+   files when the tool supports it; the tool's rule set and ignores still apply
+   from the project config. Report results (all passed / some failed / skipped)
+   and suggest the next step (`/prune-review`). Never auto-run `/prune-review`.
+   No config found -> skip silently.
 
 ## TDD Iron Law
 NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST.
@@ -38,6 +48,8 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST.
 ## Completion Criterion
 - All tasks checked `[x]`
 - All tests green
+- If the user opted into project checks (Step 7), those checks pass (or the
+  user explicitly chose to skip/proceed despite failures)
 - Apply state file recorded `base` (or `no-git`), `head` and
   `last_completed_task` updated through the run
 

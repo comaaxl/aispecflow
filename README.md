@@ -29,7 +29,7 @@ No custom planning system, no lock-in. Each skill works on its own. Use them tog
 | 0 | `terrain-scan` | Discover | Scan codebase → `docs/project-overview.md` |
 | 1 | `seed-grill` | Grill | Relentless requirements interview → `docs/requirements.md`, `CONTEXT.md`, ADRs |
 | 2 | `bloom-spec` | Spec | OpenSpec propose → proposal, specs, design, tasks |
-| 3 | `grow-apply` | Apply | Implement tasks with TDD or straight (user choice) + git checkpoint commits + optional task-level review |
+| 3 | `grow-apply` | Apply | Implement tasks with TDD or straight (user choice) + git checkpoint commits + optional task-level review + optional pre-review project checks (lint/type/integration, config-driven) |
 | 4 | `prune-review` | Review | Three-level review: task / change / project via independent subagent |
 | 5 | `harvest-archive` | Archive | Sync specs, archive change, optional requirements archival |
 | 6 | `renew-docs` | Refresh | Keep README + project-overview current (change-based or full refresh) |

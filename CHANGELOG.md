@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.6] - 2026-07-22
+
+### Added
+- `grow-apply`: new **Step 5 - project checks (optional, user-driven)** after all tasks complete. Probes the project's own configured static checks and integration tests (lint, type check, integration tests, format check, dependency security scan, coverage gates), then offers to run them (all / user-selected subset / skip). Runs only against changed files when the tool supports it; the tool's rule set and ignores still apply from the project config. Reports results and suggests `/prune-review`; never auto-runs it. No config found -> skips silently.
+- `grow-apply`: new reference file `references/project-checks-probe.md` - the config-signal table mapping project files (pyproject.toml, package.json, tsconfig.json, golangci.yml, Cargo.toml, etc.) to check categories. Explicitly a starting point, not exhaustive.
+
+### Changed
+- `axl-dev-flow` Phase 3 completion criterion: if the user opted into project checks, those pass or the user explicitly proceeded.
+- `axl-dev-flow` Phase 3 reference (`phase-3-apply.md`): documented the new Step 7 project-checks step and updated the completion criterion.
+- `README.md` / `README-zh.md`: grow-apply description now mentions the optional config-driven project checks.
+
 ## [1.1.5] - 2026-07-19
 
 ### Changed
