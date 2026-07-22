@@ -195,6 +195,17 @@ Apply the approved changes. Keep edits minimal — only what's needed to sync wi
 All probed documentation now reflects the current codebase.
 ```
 
+### Step 7: Commit doc changes (if git)
+
+After applying the approved doc updates, if the project has git, commit the
+documents this skill modified. Only commit files this skill edited. Do not
+git add -A or sweep up unrelated dirty files.
+
+List the exact paths to the user and confirm before committing. If the user
+confirms, commit append-only never amend. If no git or the user declines,
+skip silently.
+
+
 ## Guardrails
 
 - **Ask mode before scanning.** Change-based or full refresh.
