@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.3] - 2026-07-23
+
+### Fixed
+- `grow-apply` Step 5: promoted from a `###` subsection under `## Completion` to a top-level `##` section, moved before `## Completion`. Previously the project-checks gate was nested under the "all tasks complete" declaration, making it easy to skip after outputting the completion message. Now it is a mandatory pass-through step before the completion announcement.
+
 ## [1.2.0] - 2026-07-23
 
 ### Changed (breaking)
