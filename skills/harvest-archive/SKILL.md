@@ -66,15 +66,29 @@ Use `artifactPaths.specs.existingOutputPaths` from status JSON to find delta spe
 
 If user chooses sync, delta specs are synced to main specs as part of the archive process.
 
-### Step 6: Requirements document
+### Step 6: Archive grill-phase documents
 
-Check if `docs/requirements.md` exists:
-> "`docs/requirements.md` exists. Archive options:
-> 1. **Archive it** — copy to `openspec/changes/archive/<change>/requirements.md` and delete the original (clean start for next change)
-> 2. **Archive, keep original** — copy but leave the original in `docs/`
-> 3. **Skip** — leave as-is"
+Scan `docs/` for all documents. Present the list to the user and ask which should
+be archived with this change:
 
-Do NOT assume whether this file was used for the current change — let the user decide.
+> "I found these documents in `docs/`:
+> - `docs/requirements.md` (last modified: <date>)
+> - `docs/prd.md` (last modified: <date>)
+> - `docs/tech-architecture.md` (last modified: <date>)
+> - ... (all files found, excluding `docs/adr/` and `docs/.archive/`)
+>
+> Which should be archived with this change? For each:
+> 1. **Archive** - copy to `openspec/changes/archive/<change>/` and delete the original (clean start for next change)
+> 2. **Archive, keep original** - copy but leave the original in `docs/`
+> 3. **Skip** - leave as-is"
+
+Let the user decide per document. Some documents (e.g., `tech-architecture.md`,
+`project-overview.md`) are project-level and typically should NOT be archived -
+they persist across changes. Others (e.g., `requirements.md`) are per-change and
+typically should be archived. Do NOT assume - let the user decide for each.
+
+Do not include `docs/adr/` or `docs/.archive/` in the scan - ADRs are permanent
+records and backups are not documents.
 
 ### Step 7: Perform the archive
 
@@ -92,7 +106,7 @@ The CLI moves the change to `openspec/changes/archive/YYYY-MM-DD-<name>/`.
 **Change:** <name>
 **Archived to:** openspec/changes/archive/YYYY-MM-DD-<name>/
 **Specs:** ✓ Synced to main specs (or "No delta specs" or "Sync skipped")
-**Requirements:** Archived / Archived (kept original) / Skipped
+**Documents:** <list of archived documents>
 
 Prompt the user: "Change archived. Run `/renew-docs` to update project documentation."
 ```
@@ -107,7 +121,7 @@ Files this skill may have changed:
 - `openspec/changes/archive/YYYY-MM-DD-<name>/` (the moved change directory)
 - `openspec/changes/<name>/` (removed after move)
 - `openspec/specs/` (synced delta specs)
-- `docs/requirements.md` or its archived copy (if requirements were archived)
+- `docs/` documents that were archived (moved or copied)
 
 List the exact paths to the user and confirm before committing:
 
@@ -125,6 +139,6 @@ declines, skip silently. Do not block the handoff to `/renew-docs` on this.
 - **Always let the user select the change.** Never auto-select.
 - **Always prompt for spec sync.** Don't silently skip it.
 - **Always offer spec sync options.** Show all three: Sync now / Skip / Cancel.
-- **Never assume requirements.md is related to this change.** Ask the user.
-- **Don't delete anything without confirmation.** Requirements archive requires explicit user choice.
+- **Never assume which documents are related to this change.** Ask the user for each document.
+- **Don't delete anything without confirmation.** Document archival requires explicit user choice per file.
 - **Communicate in the user's language.** Match the language the user writes in throughout the session. Never mix languages in a single response.

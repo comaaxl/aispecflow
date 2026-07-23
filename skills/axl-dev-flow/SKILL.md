@@ -35,9 +35,9 @@ Orchestrate the complete development lifecycle through 7 phases:
 
 **When to run**: Always before starting a new feature or change.
 
-**What happens**: Run `/seed-grill` to relentlessly interview about requirements. Produces `docs/requirements.md`, updates `CONTEXT.md`, and creates ADRs.
+**What happens**: Run `/seed-grill` to relentlessly interview until what the user wants is unambiguous, then produce the document(s) they asked for. Output is intent-driven - could be `requirements.md`, `prd.md`, `tech-architecture.md`, `api-design.md`, UI prototype, or any combination. Also updates `CONTEXT.md` and creates ADRs.
 
-**Completion criterion**: User confirms `docs/requirements.md` captures everything correctly.
+**Completion criterion**: User confirms the produced document(s) capture everything correctly.
 
 **Prerequisites**: `docs/project-overview.md` is helpful but not required.
 
@@ -51,7 +51,7 @@ Orchestrate the complete development lifecycle through 7 phases:
 
 **Completion criterion**: All OpenSpec artifacts created and `openspec status` shows all `applyRequires` as done.
 
-**Prerequisites**: `docs/requirements.md` (if missing, spec will ask for description).
+**Prerequisites**: `docs/requirements.md` (if missing, spec will ask for description). Note: grill may produce other documents instead of or in addition to requirements.md - spec discovers all docs in `docs/` and lets the user select which to use as context.
 
 > "Phase 2: Let's turn requirements into specs. Run `/bloom-spec`?"
 

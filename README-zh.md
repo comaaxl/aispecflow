@@ -14,7 +14,7 @@ Superpowers 最接近完整工作流，但它很重——自带规划系统、wo
 
 **aispecflow** 填的就是这个空。它把这些工具最好的想法缝合进一个轻量插件：
 
-- Grill 式需求访谈
+- 意图驱动 grill（需求、架构、API、原型，或用户需要的任何文档）
 - OpenSpec 的 spec 驱动产物（proposal -> specs -> design -> tasks）
 - TDD 实施纪律
 - 独立子代理代码审查
@@ -27,11 +27,11 @@ Superpowers 最接近完整工作流，但它很重——自带规划系统、wo
 | # | 技能 | 阶段 | 做什么 |
 |---|-------|-------|-------------|
 | 0 | `terrain-scan` | 探察 | 扫描代码库 -> `docs/project-overview.md` |
-| 1 | `seed-grill` | Grill | Relentless 需求访谈 -> `docs/requirements.md`、`CONTEXT.md`、ADR |
+| 1 | `seed-grill` | Grill | 意图驱动访谈 -> 产出用户要的文档（需求、PRD、架构、API、原型等）、`CONTEXT.md`、ADR |
 | 2 | `bloom-spec` | Spec | OpenSpec propose -> proposal、specs、design、tasks |
 | 3 | `grow-apply` | 实施 | 用 TDD 或直接方式实施任务（用户选择）+ git checkpoint 提交 + 可选任务级审查 + 可选的 review 前项目校验（lint/类型检查/集成测试，按项目配置驱动） |
 | 4 | `prune-review` | 审查 | 三级审查：task / change / project，由独立子代理执行 |
-| 5 | `harvest-archive` | 归档 | 同步 specs、归档变更、可选归档需求文档 |
+| 5 | `harvest-archive` | 归档 | 同步 specs、归档变更、可选归档文档（用户选择归档哪些） |
 | 6 | `renew-docs` | 刷新 | 保持 README + project-overview 最新（基于变更或全量刷新） |
 | O | `axl-dev-flow` | 编排器 | 完整生命周期：探察 -> grill -> spec -> 实施 -> 审查 -> 归档 -> 刷新 |
 
@@ -54,10 +54,11 @@ terrain-scan -> seed-grill -> bloom-spec -> grow-apply -> prune-review -> harves
 └──────────┘   └──────────┘   └──────────┘   └──────────┘   └──────────┘   │change    │   │docs      │
       │              │              │              │              │         └──────────┘   └──────────┘
       ▼              ▼              ▼              ▼              ▼              │              │
-  project-       requirements   proposal +      代码 +         审查            变更          README +
-  overview.md    .md            specs +         测试           报告            已归档        project-
-                CONTEXT.md      design +                       (+ 需求       (specs        overview.md
-                ADR             tasks                           可选)         已同步)       已更新
+  project-       grill 阶段     proposal +      代码 +         审查            变更          README +
+  overview.md    文档           specs +         测试           报告            已归档        project-
+                (意图驱动)     design +                       (+ 文档       (specs        overview.md
+                CONTEXT.md     tasks                           可选)         已同步)       已更新
+                ADR
 ```
 
 跑 `/axl-dev-flow` 走完整流水线，或单独用任一技能。
@@ -85,9 +86,12 @@ your-project/
 │               ├── design.md
 │               ├── tasks.md
 │               └── requirements.md    #（如果用户选择归档）
+│                   └── ... 其他文档     #（用户选择归档的其他文档）
 ├── docs/
 │   ├── project-overview.md            # terrain-scan 生成，renew-docs 刷新
-│   ├── requirements.md                # seed-grill 生成
+│   ├── requirements.md                # seed-grill 生成（用户要需求文档时）
+│   ├── prd.md                         # seed-grill 生成（用户要 PRD 时）
+│   ├── tech-architecture.md           # seed-grill 生成（用户要技术架构时）
 │   ├── adr/                           # 架构决策记录
 │   │   └── 0001-use-postgres-for-sessions.md
 │   └── .archive/                      # 修改前的备份文件

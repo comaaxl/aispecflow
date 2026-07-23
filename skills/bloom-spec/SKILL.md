@@ -22,22 +22,28 @@ Default to option 1. Cd into the selected directory. All CLI commands and file r
 
 1. **Explore the codebase directly.** Read relevant source files, configs, and entry points. The code is the ultimate source of truth.
 
-2. **Check for supporting documents.** Look for these files and note their last-modified dates:
-   - `docs/requirements.md`
-   - `docs/project-overview.md`
-   - `CONTEXT.md`
+2. **Discover supporting documents.** Scan `docs/` for all `.md` files and list
+   them with last-modified dates. Also check for `CONTEXT.md` at the project root.
 
-   Present the list to the user:
-   > "I found these documents that may help as context for the specs:
+   Present the list to the user and ask which to use as context:
+   > "I found these documents in `docs/`:
    > - `docs/requirements.md` (last modified: <date>)
+   > - `docs/tech-architecture.md` (last modified: <date>)
    > - `docs/project-overview.md` (last modified: <date>)
-   > - `CONTEXT.md`
+   > - ... (all .md files found)
    >
-   > Use them as context? Or start fresh?"
+   > Plus `CONTEXT.md` at the project root.
+   >
+   > Which should I use as context for the specs? (Select all that apply, or none to start fresh)"
 
-   If the user chooses to use them, read them. If not, proceed without.
+   Let the user select which documents are relevant. For incremental changes, the
+   user may only need `requirements.md`; for new projects, they may also want
+   `tech-architecture.md` or other documents from the grill phase. Do not assume -
+   let the user decide.
 
-3. **If no requirements document is available** (doesn't exist, or user declines to use it):
+   Read the selected documents. Proceed without if none selected.
+
+3. **If no requirements document is available** (doesn't exist, or user didn't select it):
    > "No requirements document to work from. Would you like to:
    > 1. Run `/seed-grill` first to clarify requirements
    > 2. Describe what you want to build right now"
@@ -134,7 +140,7 @@ declines, skip silently. Do not block the handoff to `/grow-apply` on this.
 ## Guardrails
 
 - **Ask for change name if not provided.** Never derive it.
-- **Ask before reading documents.** Never auto-load `docs/requirements.md`.
+- **Ask before reading documents.** Never auto-load documents. Let the user select which are relevant.
 - **Follow `openspec instructions` exactly.** The CLI owns the artifact format.
 - **Validate before generating.** Don't create specs with known ambiguities.
 - **Communicate in the user's language.** Match the language the user writes in throughout the session. Never mix languages in a single response.

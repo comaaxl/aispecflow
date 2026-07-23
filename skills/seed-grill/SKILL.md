@@ -1,15 +1,31 @@
 ---
 name: seed-grill
-description: Relentlessly interview to sharpen requirements before building. Produces a requirements document, domain glossary, and architectural decision records.
+description: Relentlessly interview to clarify what the user wants, then produce the documents they need. Output is intent-driven - requirements, PRD, architecture, prototype, API, or whatever the user asks for.
 ---
 
-# Grill — Requirements Elicitation
+# Grill - Intent-Driven Interview & Document Generation
 
-Relentlessly interview the user about what they want to build until their requirements are unambiguous and complete. This is the hard gate before any spec or code gets written.
+Relentlessly interview the user until what they want is unambiguous and complete, then produce the document(s) they need. This is the hard gate before any spec or code gets written.
 
-**Core principle**: One question at a time. Walk every branch of the decision tree. Don't let fuzzy language survive.
+**Core principle**: The output is driven by the user's intent, not by a fixed default. Listen first - understand what the user wants this round (requirements? architecture? prototype? API design?), then interview toward that goal, then produce it.
 
-**CRITICAL — override default behavior**: This skill is an interactive interview. You MUST ask questions one at a time in the conversation and wait for the user's reply before proceeding. Do NOT batch questions. Do NOT make assumptions and skip ahead. Do NOT generate the requirements document until the user has answered enough questions to reach saturation. If you feel tempted to "just proceed with reasonable assumptions" — STOP. That is the wrong mode for this skill. The entire value of grilling comes from the back-and-forth dialogue, not from the document at the end.
+**CRITICAL - override default behavior**: This skill is an interactive interview. You MUST ask questions one at a time in the conversation and wait for the user's reply before proceeding. Do NOT batch questions. Do NOT make assumptions and skip ahead. Do NOT generate any document until the user has answered enough questions to reach saturation. If you feel tempted to "just proceed with reasonable assumptions" - STOP. That is the wrong mode for this skill. The entire value of grilling comes from the back-and-forth dialogue, not from the document at the end.
+
+## Step 0: Understand Intent
+
+Before any interview, understand what the user wants this round. Read the user's message and determine:
+
+- What document(s) do they want? (requirements, PRD, technical architecture, API design, UI prototype, or something else)
+- Are they communicating a need for requirements clarification? Or do they want a specific artifact like a prototype or architecture?
+- Could they want multiple documents? (e.g., "I want to start a new project" might need requirements + architecture + prototype)
+
+If the intent is clear from the user's message, proceed. If not, ask one question to clarify:
+
+> "What would you like me to produce? For example: requirements document, PRD, technical architecture, API design, UI prototype, or something else?"
+
+The user's intent drives everything that follows - which questions to ask, what to produce at the end. There is no default output. If the user is discussing requirements, produce requirements. If they want a prototype, produce a prototype. If they want both, produce both.
+
+**For any document produced**: follow professional engineering conventions. Consult `references/document-types.md` for common document types with their key questions and structure suggestions - this is a reference, not a rigid template. Adapt to the project's actual needs.
 
 ## Pre-flight
 
@@ -21,13 +37,13 @@ Before asking the first question:
      > 2. `<cwd>/docs/` (project root)"
      Default to option 1. Use the confirmed path for all file writes.
 
-1. **Explore the codebase directly.** Read relevant source files, configs, and entry points. The code is the ultimate source of truth. If docs exist (README, CONTEXT.md, project-overview.md), read them as context — but never trust them over what the code actually says. If code and docs conflict, the code wins.
+1. **Explore the codebase directly.** Read relevant source files, configs, and entry points. The code is the ultimate source of truth. If docs exist (README, CONTEXT.md, project-overview.md), read them as context - but never trust them over what the code actually says. If code and docs conflict, the code wins.
 
-2. **Read `CONTEXT.md`** if it exists — respect existing domain terminology. If the user uses a term that conflicts with the glossary, surface it immediately.
+2. **Read `CONTEXT.md`** if it exists - respect existing domain terminology. If the user uses a term that conflicts with the glossary, surface it immediately.
 
-3. **Read relevant ADRs** in `docs/adr/` — don't re-litigate settled decisions.
+3. **Read relevant ADRs** in `docs/adr/` - don't re-litigate settled decisions.
 
-4. **Read `docs/project-overview.md`** if it exists — but NEVER assume it matches the current codebase. Spot-check key claims (directory structure, entry points, tech stack versions, deps) against the actual files. If discrepancies found, note them and prefer the code. Treat it as potentially stale, not gospel.
+4. **Read `docs/project-overview.md`** if it exists - but NEVER assume it matches the current codebase. Spot-check key claims (directory structure, entry points, tech stack versions, deps) against the actual files. If discrepancies found, note them and prefer the code. Treat it as potentially stale, not gospel.
 
 ## The Interview
 
@@ -41,7 +57,7 @@ If a question can be answered by exploring the codebase, explore the codebase in
 
 ### Question Domains
 
-Walk through these domains in order, but don't force every question if the answer is clear. Skip domains that don't apply.
+Walk through these domains in order, but don't force every question if the answer is clear. Skip domains that don't apply. Adapt the depth and focus based on the user's intent - if they want a UI prototype, spend more time on user flows and interactions; if they want a technical architecture, spend more time on component boundaries and tech trade-offs. Use `references/document-types.md` for type-specific question suggestions.
 
 **1. Problem & Motivation**
 - What problem does this solve? Who has this problem?
@@ -77,12 +93,12 @@ Walk through these domains in order, but don't force every question if the answe
 
 ### During the Interview
 
-- **Challenge fuzzy language**: "You said 'fast' — what response time? Under what load?"
-- **Surface contradictions**: "Earlier you said X, but now you're describing Y — which is correct?"
-- **Sharpen with scenarios**: "Imagine a user does X and then Y happens — what should the system do?"
+- **Challenge fuzzy language**: "You said 'fast' - what response time? Under what load?"
+- **Surface contradictions**: "Earlier you said X, but now you're describing Y - which is correct?"
+- **Sharpen with scenarios**: "Imagine a user does X and then Y happens - what should the system do?"
 - **Recommend and move on**: Provide a suggested answer for each question, get confirmation, move to the next.
 
-## Documentation — Write As You Go
+## Documentation - Write As You Go
 
 **Do not batch these up at the end.** Write them inline as decisions crystallize.
 
@@ -101,15 +117,15 @@ _Avoid_: synonym1, synonym2
 
 Rules:
 - Create `CONTEXT.md` at the project root if it doesn't exist.
-- Be opinionated — pick the best term, list alternatives under `_Avoid_`.
+- Be opinionated - pick the best term, list alternatives under `_Avoid_`.
 - Only include project-specific domain terms, not general programming concepts.
 
 ### docs/adr/ (Architectural Decision Records)
 
 Offer an ADR when ALL three are true:
-1. **Hard to reverse** — changing later is costly
-2. **Surprising without context** — a future reader would wonder "why?"
-3. **Real trade-off** — genuine alternatives existed
+1. **Hard to reverse** - changing later is costly
+2. **Surprising without context** - a future reader would wonder "why?"
+3. **Real trade-off** - genuine alternatives existed
 
 Format (`docs/adr/NNNN-title.md`):
 
@@ -121,92 +137,77 @@ Format (`docs/adr/NNNN-title.md`):
 
 Number sequentially. Only include optional sections (Status, Considered Options, Consequences) when they add genuine value.
 
-## Final Output: requirements.md
+## Final Output: Produce What the User Asked For
 
-### Check for existing requirements
+Once the interview reaches saturation - the user says "that's everything" and you can't find more ambiguity - produce the document(s) the user asked for. All documents go under `docs/`.
 
-Before writing, check if `docs/requirements.md` already exists. If it does:
+### Check for existing documents
 
-> "`docs/requirements.md` already exists (last modified: <date>, likely from a previous change).
+Before writing, check if any target document already exists in `docs/`. If it does:
+
+> "`docs/<filename>` already exists (last modified: <date>, likely from a previous session).
 >
-> 1. **Overwrite it** — replace with this change's requirements
-> 2. **Backup, then overwrite** (recommended) — copy existing to `docs/.archive/requirements.md.<date>.bak` first, then write new
-> 3. **Save to a different path** — e.g., `docs/requirements-<change-name>.md`"
+> 1. **Overwrite it** - replace with this round's content
+> 2. **Backup, then overwrite** (recommended) - copy existing to `docs/.archive/<filename>.<date>.bak` first, then write new
+> 3. **Save to a different path** - e.g., `docs/<filename>-<topic>.md`"
 
 Let the user choose. Default to option 2 if they don't specify. Create `docs/.archive/` if it doesn't exist when using option 2.
 
-### Write the document
+### Write the document(s)
 
-Once the interview reaches saturation — the user says "that's everything" and you can't find more ambiguity — produce `docs/requirements.md`.
+Produce the document(s) using the interview context. Follow professional engineering conventions - `references/document-types.md` provides common document types with key questions and structure suggestions, but the actual structure should adapt to the project's needs.
 
-```markdown
-# Requirements: <Feature/Change Name>
+Present the document(s) to the user. Say: "This is my understanding. Does this capture everything correctly?"
 
-## Problem Statement
-<1-2 sentences>
+If they request changes, iterate.
 
-## Users & Stakeholders
-<Who and their needs>
+### Common Document Types
 
-## Functional Requirements
-- <Requirement 1>: <description>
-- <Requirement 2>: <description>
-...
+When the user asks for a specific type of document, consult `references/document-types.md` for:
+- Key questions that should have been covered in the interview
+- Structure suggestions for the output document
 
-## Non-Functional Requirements
-- Performance: <specific targets>
-- Security: <requirements>
-- ...
+This is a reference guide, not a rigid template. The user may ask for document types not listed there - use your judgment and follow professional conventions.
 
-## Success Criteria
-- <Measurable outcome>
-...
+### Handoff
 
-## Scope Boundaries
-**In scope**: ...
-**Out of scope**: ...
-**Assumptions**: ...
+After the user confirms the document(s):
 
-## Risks & Mitigations
-- <Risk> → <Mitigation>
+> "Document(s) confirmed. Run `/bloom-spec` when you're ready to generate the formal specs and start implementation. Or let me know if you need anything else."
 
-## Dependencies
-- <What this depends on and sequencing>
-```
-
-Present this document to the user. Say: "This is my understanding of what we're building. Does this capture everything correctly?"
-
-Once the user confirms requirements.md, **STOP completely.** Do NOT start coding, designing, or implementing anything. Your ONLY next action is to prompt:
-
-> "Requirements confirmed. Run `/bloom-spec` when you're ready to generate the formal specs."
+Then **STOP completely.** Do NOT start coding, designing, or implementing anything.
 
 ### Commit artifacts (if git)
 
-After the user confirms `requirements.md`, if the project has git, commit the
+After the user confirms the document(s), if the project has git, commit the
 artifacts this skill produced so the working tree is clean for the next phase.
 **Only commit files this skill created or updated** - do not `git add -A` or
 sweep up unrelated dirty files.
 
-Files this skill may have produced:
-- `docs/requirements.md`
+Files this skill may have produced (depends on user intent):
+- `docs/` - whatever document(s) the user asked for (requirements.md, prd.md,
+  tech-architecture.md, api-design.md, prototype files, etc.)
 - `CONTEXT.md`
 - `docs/adr/NNNN-*.md` (any ADRs created during grilling)
 
 List the exact files to the user and confirm before committing:
 
-> "I'll commit these requirements-phase artifacts:
+> "I'll commit these grill-phase artifacts:
 > - docs/requirements.md
+> - docs/tech-architecture.md
 > - CONTEXT.md
-> - docs/adr/0003-auth-strategy.md
+> - docs/adr/0001-db-selection.md
 >
 > Commit as `docs(seed-grill): <topic>`. OK?"
 
 If the user confirms, commit (append-only, never amend). If no git, or the user
-declines, skip silently. Do not block the handoff to `/bloom-spec` on this.
+declines, skip silently. Do not block the handoff on this.
 
 ## Guardrails
 
 - **One question at a time. Always.**
+- **Intent drives output.** There is no default document. Understand what the user wants first, then interview toward it, then produce it.
 - **Don't skip the documentation.** Inline updates to CONTEXT.md and ADRs are non-negotiable.
+- **Follow professional engineering conventions.** Consult `references/document-types.md` for guidance, but adapt to the project's actual needs.
 - **Explore codebase when relevant.** If `docs/project-overview.md` exists, use it as context but verify against the code.
-- **STOP after user confirms requirements.md.** Do NOT start coding, implementing, or touching any source files. Your only output is a prompt to run `/bloom-spec`.
+- **STOP after user confirms the document(s).** Do NOT start coding, implementing, or touching any source files.

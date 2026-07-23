@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2026-07-23
+
+### Changed (breaking)
+- `seed-grill`: **Major refactor - intent-driven output.** The skill no longer defaults to producing `requirements.md`. Instead, it first understands what the user wants this round (requirements? PRD? architecture? API? prototype? a combination?), interviews toward that goal, then produces exactly what was asked for. There is no default document and no fixed output template. The previous "Optional: Generate a Human-Readable PRD" step (added in 1.1.11) is replaced by this intent-driven model. All produced documents go under `docs/`.
+- `seed-grill`: new `Step 0: Understand Intent` phase before Pre-flight. The agent reads the user's message to determine what document(s) to produce, asking one clarifying question if intent is ambiguous.
+- `seed-grill`: Question Domains now adapt depth and focus based on the target document type. The agent consults `references/document-types.md` for type-specific question suggestions.
+- `seed-grill`: Handoff logic no longer gated on `requirements.md`. Always offers `/bloom-spec` as the next step, regardless of which document(s) were produced.
+- `bloom-spec`: Phase 1 (Context Discovery) no longer uses a hardcoded document list. Instead scans `docs/` for all `.md` files and lets the user select which are relevant as context for this round of specs.
+- `harvest-archive`: Step 6 no longer only handles `requirements.md`. Now scans `docs/` for all documents and lets the user choose which to archive with the change (per document: archive / archive+keep / skip).
+- `axl-dev-flow` Phase 1 description and `phase-1-grill.md` reference updated to reflect the intent-driven model.
+
+### Added
+- `seed-grill/references/document-types.md`: new reference guide for common document types (Requirements, PRD, Technical Architecture, API Design, UI Prototype). Each entry includes audience, purpose, key questions, and structure suggestions. Explicitly marked as a reference - not a rigid template. Requirements and PRD are listed separately with distinct structures.
+
+### Updated
+- `README.md` and `README-zh.md`: skill table, flow diagram, and project structure updated to reflect intent-driven grill output and multi-document archival.
+
+## [1.1.11] - 2026-07-23
+
+### Added
+- `seed-grill`: new "Optional: Generate a Human-Readable PRD" step. After the user confirms `requirements.md`, the agent asks whether they also want a narrative `docs/prd.md` for stakeholders, managers, and new team members. The PRD is generated from the confirmed requirements + full interview context (no new interview). Free-form narrative structure - the suggested sections (Background, Current State, Goals, Users & Scenarios, Solution Overview, etc.) are adaptable, not rigid. `requirements.md` remains the single source of truth for the spec pipeline; if the two conflict, requirements.md wins. Updated commit-artifacts list to include `docs/prd.md` when generated.
+- `bloom-spec`: `docs/prd.md` added to the supporting documents list in Phase 1 (Context Discovery), so the spec phase can optionally consume the PRD as additional context alongside `requirements.md`.
+
+### Changed
+- `axl-dev-flow` Phase 1 description and `phase-1-grill.md` reference updated to mention the optional PRD output.
+
 ## [1.1.10] - 2026-07-22
 
 ### Changed
