@@ -1,7 +1,7 @@
 # Project Checks Probe Reference
 
 Configuration signals for detecting what static checks and integration tests a
-project has configured. Used by `grow-apply` Step 5 (project checks) to decide
+project has configured. Used by `grow-apply` project checks to decide
 what to offer the user.
 
 **This table is a starting point, NOT exhaustive.** Extend it to match what you

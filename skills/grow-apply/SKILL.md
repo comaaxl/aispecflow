@@ -385,7 +385,7 @@ Mock at **system boundaries only**:
 
 **Never mock** your own classes, modules, or internal collaborators.
 
-## Step 5: Project checks (ask first, never auto-run)
+## Project checks (ask first, never auto-run)
 
 After all tasks are complete, **probe the project's configured checks** by
 looking for the project's own configuration files and mapping them to check
