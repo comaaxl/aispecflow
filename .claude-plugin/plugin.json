@@ -1,7 +1,7 @@
 {
   "name": "aispecflow",
-  "version": "1.1.10",
-  "description": "Full development lifecycle: repo discovery → requirements grill → spec-driven design → TDD implementation → code review → archive → docs refresh",
+  "version": "1.2.0",
+  "description": "Full development lifecycle: repo discovery -> intent-driven grill -> spec-driven design -> TDD implementation -> code review -> archive -> docs refresh",
   "author": {
     "name": "Axl Sun",
     "email": "axlsun1992310@gmail.com"
