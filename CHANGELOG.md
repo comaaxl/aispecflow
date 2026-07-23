@@ -134,3 +134,17 @@ All notable changes to this project will be documented in this file.
 - `renew-docs`: change-based or full documentation refresh with backup
 - `axl-dev-flow`: orchestrator connecting all phases
 - Dual platform support: Claude Code and Code
+
+## [1.2.2] - 2026-07-23
+
+### Added
+- `prune-review`: reviewer templates enhanced with new generic correctness dimensions. All additions are language-agnostic principles, not tied to any specific project or stack.
+  - `project-reviewer.md`: 5 new check areas:
+    1. **Return-value boundaries** - consumers must handle sentinel/edge values (-1, None, empty, error codes) from callees.
+    2. **Process-lifecycle cleanup** - startup-created long-lived resources (pools, clients, workers) must register shutdown hooks, not just exception-path release.
+    3. **Library/framework implicit behavior** - verify what context managers/middleware/decorators do implicitly, check for duplicate/conflicting/relied-upon implicit actions.
+    4. **Build/config consistency** - declared runtime version vs linter target vs CI matrix vs deployment must agree; lint rule set must cover common language anti-patterns.
+    5. **Open-ended sweep** - after the structured checklist, a final pass asking "what would still make me nervous?" to catch defects that live in the gaps between categories.
+  - `task-reviewer.md` and `change-reviewer.md` (shared correctness kernel): 2 new areas each:
+    1. **Return-value boundaries** - same principle, scoped to the task/change diff.
+    2. **Library/framework implicit behavior** - same principle, scoped to the task/change diff.

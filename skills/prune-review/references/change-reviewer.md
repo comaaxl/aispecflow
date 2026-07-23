@@ -72,6 +72,11 @@ Task: "Review a whole OpenSpec change"
       `fetch_all`-style executor that takes no `params` argument is a contract
       bug. Do NOT assume the callee handles it - read the callee. If you cannot
       read it, mark the item ⚠️ rather than guessing.
+    - Return-value boundaries: when the change consumes a return value from a
+      callee (library or internal), does it handle sentinel/edge values the
+      callee may produce (-1, None, empty collection, error code, undefined)?
+      Trace the value from source to every consumer. If you cannot verify,
+      mark the item ⚠️.
 
     **Correctness - failure paths and side-effect consistency:**
     - For any function the change adds or changes, walk each failure path:
@@ -86,6 +91,15 @@ Task: "Review a whole OpenSpec change"
          that hides a real failure?
       5. Retry/idempotency: if this path can be retried, does it cause duplicate
          side effects?
+
+    **Correctness - library/framework implicit behavior:**
+    - Frameworks and libraries perform implicit actions through context
+      managers, middleware, decorators, or lifecycle hooks (auto-commit,
+      auto-rollback, auto-close, transaction-wrapping). When the change uses a
+      `with` block, decorator, or framework-managed lifecycle, identify what
+      the framework does implicitly, then check whether explicit code
+      duplicates, conflicts with, or silently relies on it. Don't assume -
+      read the library's docs or source.
 
     **Architecture:**
     - Sound design decisions?

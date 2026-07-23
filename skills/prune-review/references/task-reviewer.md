@@ -64,6 +64,10 @@ Task: "Review a single task's changes"
       contract bug, not a style issue. Do NOT assume the callee handles it -
       read the callee. If you cannot read the callee, state that explicitly
       rather than guessing.
+    - Return-value boundaries: when this task consumes a return value from a
+      callee (library or internal), does it handle sentinel/edge values the
+      callee may produce (-1, None, empty collection, error code, undefined)?
+      Trace the value from source to every consumer in this task's diff.
 
     **Correctness - failure paths and side-effect consistency:**
     - For any function this task adds or changes, walk each failure path:
@@ -78,6 +82,15 @@ Task: "Review a single task's changes"
          no-raise that hides a real failure?
       5. Retry/idempotency: if this path can be retried, does it cause duplicate
          side effects (duplicate messages, charges, writes)?
+
+    **Correctness - library/framework implicit behavior:**
+    - Frameworks and libraries perform implicit actions through context
+      managers, middleware, decorators, or lifecycle hooks (auto-commit,
+      auto-rollback, auto-close, transaction-wrapping). When this task uses a
+      `with` block, decorator, or framework-managed lifecycle, identify what
+      the framework does implicitly, then check whether the task's explicit
+      code duplicates, conflicts with, or silently relies on it. Don't assume
+      - read the library's docs or source.
 
     **Security:**
     - User input validated at the boundary this task touches?

@@ -49,6 +49,12 @@ Task: "Project health check"
       params like `params`/`timeout`/`scope`)? A SQL string with `%s`
       placeholders fed to a `fetch_all`-style executor that takes no `params`
       argument is a contract bug that surfaces as a runtime syntax error.
+    - Return-value boundaries: when a function consumes a value from a callee
+      (library or internal), does it handle sentinel/edge return values the
+      callee may produce (-1, None, empty collection, error code, undefined)?
+      Unhandled sentinels silently propagate as wrong data to logs, UIs, or
+      downstream state. Trace the return value from its source to every
+      consumer.
     - Flag contract mismatches as Critical or Important - these are latent
       runtime bugs, not style.
 
@@ -63,8 +69,28 @@ Task: "Project health check"
          without rollback?
       4. Error swallowing: `except: pass`, bare `except`, log-only-no-raise?
       5. Retry/idempotency: retried paths causing duplicate side effects?
+      6. Process-lifecycle cleanup: resources created at startup that outlive
+         any single request (connection pools, HTTP clients, background
+         workers, message consumers, scheduled timers) - are they registered
+         for graceful shutdown (atexit, lifespan hooks, context managers on
+         the app object, signal handlers)? A pool created in a factory
+         function with no close() call anywhere is a process-level leak even
+         if no single function leaks.
     - These are common long-term defects; note systemic patterns, not just
       isolated instances.
+
+    **Correctness - library/framework implicit behavior:**
+    - Frameworks and libraries often perform implicit actions through context
+      managers, middleware, decorators, or lifecycle hooks: auto-commit on
+      connection exit, auto-rollback on exception, auto-close, auto-flush,
+      transaction-wrapping, exception-swallowing. When you see a `with` block,
+      a decorator, or a framework-managed lifecycle, identify what the
+      framework does implicitly, then check whether explicit code duplicates,
+      conflicts with, or relies on it. Explicit `commit()` inside a context
+      manager that already auto-commits is redundant; relying on implicit
+      commit without knowing it is fragile; mixing both in sibling code paths
+      is inconsistent. Don't assume - read the library's docs or source for
+      the behavior in use.
 
     **Technical debt:**
     - Accumulated workarounds, TODO/FIXME density?
@@ -81,6 +107,18 @@ Task: "Project health check"
     - For each notable direct dependency: actively maintained, license-
       compatible, and earning its place over the standard library?
     - Transitive graph: any surprising indirect packages nobody chose directly?
+
+    **Build/config consistency:**
+    - Do project metadata fields agree with each other? Declared runtime
+      version (e.g. `requires-python`, `engines`, `sourceCompatibility`) vs
+      linter/formatter target version vs CI test matrix vs deployment
+      template - a mismatch means either the linter won't catch version-
+      specific issues or the project promises a version it can't run on.
+    - Lint/formatter rule coverage: does the selected rule set catch the
+      language's common anti-patterns (builtin shadowing, unused imports,
+      complexity, security, mutable defaults)? Disabled or missing rule
+      categories leave known footguns unflagged. Flag the gap, not each
+      individual violation.
 
     **Security:**
     - Secrets in code, logs, or version control?
@@ -115,6 +153,17 @@ Task: "Project health check"
       return-shape patterns? Divergence here is tech debt that compounds - flag
       the pattern, not just one instance.
     - Areas that look like they evolved without a coherent direction?
+
+    **Beyond the checklist (open-ended sweep):**
+    - The structured checks above are NOT exhaustive - they cover common
+      categories, but real defects often live in the gaps between categories or
+      in concerns unique to this project's domain and stack.
+    - After completing every section above, do one final open-ended pass with
+      this question: "If I owned this project and shipped it tomorrow, what
+      would still make me nervous?" Look for things that don't fit neatly into
+      any checklist item - process-level lifecycle gaps, config contradictions,
+      library-specific behavior traps, cross-cutting concerns that a category-
+      by-category sweep can miss. These findings are often the most valuable.
 
     ## Calibration
 
