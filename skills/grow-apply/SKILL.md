@@ -385,23 +385,7 @@ Mock at **system boundaries only**:
 
 **Never mock** your own classes, modules, or internal collaborators.
 
-## Completion
-
-```
-## Implementation Complete
-
-**Change:** <name>
-**Progress:** N/N tasks complete ✓
-
-### Completed
-- [x] Task 1: ...
-- [x] Task 2: ...
-...
-
-All tasks complete.
-```
-
-### Step 5: Project checks (ask first, never auto-run)
+## Step 5: Project checks (ask first, never auto-run)
 
 After all tasks are complete, **probe the project's configured checks** by
 looking for the project's own configuration files and mapping them to check
@@ -497,6 +481,22 @@ Then, based on `per_task_review` in the state file:
 
 If there is no git, note that change-level review degrades to the whole working
 tree (imprecise); project-level review is unaffected.
+
+## Completion
+
+```
+## Implementation Complete
+
+**Change:** <name>
+**Progress:** N/N tasks complete ✓
+
+### Completed
+- [x] Task 1: ...
+- [x] Task 2: ...
+...
+
+All tasks complete.
+```
 
 ## Guardrails
 
